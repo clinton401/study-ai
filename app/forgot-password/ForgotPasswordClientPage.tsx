@@ -1,7 +1,5 @@
 "use client"
 import { motion } from "framer-motion"
-import { ArrowLeft } from "lucide-react"
-import Link from "next/link"
 import { ForgotPasswordForm } from "@/components/auth/forgot-password-form"
 
 export default function ForgotPasswordClientPage() {

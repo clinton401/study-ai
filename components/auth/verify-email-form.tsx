@@ -189,7 +189,7 @@ if (countdown < COUNTDOWN_DURATION)
 
           <div className="space-y-4">
             <p className="text-sm text-gray-600 dark:text-gray-300 text-center">
-              Didn't receive the code? Check your spam folder or
+              Didn&apos;t receive the code? Check your spam folder or
             </p>
 
             {/* <Button

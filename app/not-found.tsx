@@ -17,7 +17,7 @@ export default function NotFound() {
           <div className="mx-auto mb-4 text-6xl font-bold text-purple-600 dark:text-purple-400">404</div>
           <CardTitle className="text-2xl font-semibold text-gray-900 dark:text-white">Page Not Found</CardTitle>
           <CardDescription className="text-gray-600 dark:text-gray-400">
-            Sorry, we couldn't find the page you're looking for. It might have been moved, deleted, or you entered the
+            Sorry, we couldn&apos;t find the page you&apos;re looking for. It might have been moved, deleted, or you entered the
             wrong URL.
           </CardDescription>
         </CardHeader>

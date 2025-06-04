@@ -28,7 +28,7 @@ export default function Error({
             Oops! Something went wrong
           </CardTitle>
           <CardDescription className="text-gray-600 dark:text-gray-400">
-            We encountered an unexpected error. Don't worry, it's not your fault!
+            We encountered an unexpected error. Don&apos;t worry, it&apos;s not your fault!
           </CardDescription>
         </CardHeader>
         <CardContent className="text-center">

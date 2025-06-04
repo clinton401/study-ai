@@ -5,7 +5,6 @@ import { motion } from "framer-motion"
 import {  Mail, Lock, User, GraduationCap } from "lucide-react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { Button } from "@/components/ui/button";
 import {useRouter} from "next/navigation";
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"

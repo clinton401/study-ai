@@ -7,15 +7,12 @@ import {
   FileText,
   Mail,
   Sparkles,
-  Copy,
-  Download,
   Loader2,
   Wand2,
   BookOpen,
   Users,
   Briefcase,
   GraduationCap,
-  CheckCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -382,7 +379,7 @@ export function ContentGeneratorClient() {
                         Your AI-generated content will appear here
                       </p>
                       <p className="text-sm text-gray-400">
-                        Fill in the options above and click "Generate Content"
+                        Fill in the options above and click &quot;Generate Content&quot;
                         to get started
                       </p>
                     </div>

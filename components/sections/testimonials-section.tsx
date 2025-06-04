@@ -59,7 +59,7 @@ export function TestimonialsSection() {
                       <Star key={i} className="h-5 w-5 text-yellow-400 fill-current" />
                     ))}
                   </div>
-                  <p className="text-gray-600 dark:text-gray-300 mb-6 italic">"{testimonial.content}"</p>
+                  <p className="text-gray-600 dark:text-gray-300 mb-6 italic">&quot;{testimonial.content}&quot;</p>
                   <div>
                     <p className="font-semibold text-gray-800 dark:text-gray-200">{testimonial.name}</p>
                     <p className="text-sm text-gray-500 dark:text-gray-400">{testimonial.role}</p>

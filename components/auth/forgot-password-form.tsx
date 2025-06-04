@@ -5,7 +5,6 @@ import { motion } from "framer-motion"
 import { Mail, ArrowLeft, GraduationCap } from "lucide-react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
@@ -111,11 +110,11 @@ export function ForgotPasswordForm() {
             <div className="text-center space-y-6">
               <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-xl p-4">
                 <p className="text-green-800 dark:text-green-200">
-                  If an account with that email exists, we've sent you a password reset link.
+                  If an account with that email exists, we&apos;ve sent you a password reset link.
                 </p>
               </div>
               <p className="text-sm text-gray-600 dark:text-gray-300">
-                Didn't receive the email? Check your spam folder or{" "}
+                Didn&apos;t receive the email? Check your spam folder or{" "}
                 <button
                   onClick={handleTryAgain}
                   className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 font-medium"

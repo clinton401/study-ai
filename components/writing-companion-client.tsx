@@ -7,8 +7,6 @@ import {
   CheckCircle,
   RefreshCw,
   Volume2,
-  Copy,
-  Download,
   Wand2,
   BookOpen,
   Users,
@@ -18,7 +16,6 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { handleDownload, handleCopy} from "@/lib/main";
 import { rephraseText } from "@/actions/rephrase-text";
 import createToast from "@/hooks/create-toast";
 import { ERROR_MESSAGES } from "@/lib/error-messages";

@@ -9,8 +9,6 @@ import {
   Brain,
   BookOpen,
   Sparkles,
-  Copy,
-  Download,
   Loader2,
   CheckCircle,
   RotateCcw,
@@ -25,7 +23,7 @@ import { extractTextFromDocx, extractTextFromTxt } from "@/lib/extract"
 import { ERROR_MESSAGES } from "@/lib/error-messages"
 import { summarizeText } from "@/actions/summarize-text";
 import extractTextFromPDF from "react-pdftotext";
-import {validateFileSize, handleDownload, handleCopy} from "@/lib/main";
+import {validateFileSize} from "@/lib/main";
 import { CopyExport } from "./copy-exports"
 
 
@@ -372,7 +370,7 @@ export function AIStudyToolsClient() {
                       Your AI-generated summary will appear here
                     </p>
                     <p className="text-sm text-gray-400">
-                      Upload content and click "Generate" to get started
+                      Upload content and click &quot;Generate&quot; to get started
                     </p>
                   </motion.div>
                 )}

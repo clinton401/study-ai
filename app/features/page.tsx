@@ -1,7 +1,6 @@
 import type { Metadata } from "next"
 import { FeaturesHero } from "@/components/features/features-hero"
 import { FeaturesDetailSection } from "@/components/features/features-detail-section"
-import { HowItWorksSection } from "@/components/features/how-it-works-section"
 import { FeaturesCTASection } from "@/components/features/features-cta-section"
 
 export const metadata: Metadata = {
