@@ -1,0 +1,85 @@
+"use client"
+
+import { useState, useEffect } from "react"
+import { motion } from "framer-motion"
+import { ArrowRight, BookOpen, PenTool, Brain } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import Link from "next/link"
+
+// Client Component - handles animations and interactivity
+export function HeroSection() {
+  const [isVisible, setIsVisible] = useState(false)
+
+  useEffect(() => {
+    setIsVisible(true)
+  }, [])
+
+  return (
+    <section className="pt-32 pb-20 px-4">
+      <div className="max-w-7xl mx-auto">
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: isVisible ? 1 : 0, y: isVisible ? 0 : 30 }}
+          transition={{ duration: 0.8 }}
+          className="text-center"
+        >
+          <h1 className="text-5xl md:text-7xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-6">
+            Study Smarter with AI
+          </h1>
+          <p className="text-xl md:text-2xl text-gray-600 dark:text-gray-300 mb-8 max-w-3xl mx-auto">
+            A one-stop learning assistant for students: summarize notes, generate quiz questions, and improve writing
+            instantly with AI.
+          </p>
+
+          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16">
+            <Link href="/register">
+              <Button size="lg" className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 text-lg rounded-full">
+                Get Started
+                <ArrowRight className="ml-2 h-5 w-5" />
+              </Button>
+            </Link>
+            <Link href="/features">
+              <Button variant="outline" size="lg" className="px-8 py-4 text-lg rounded-full border-2">
+                Try Demo
+              </Button>
+            </Link>
+          </div>
+
+          {/* Hero Illustration */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: isVisible ? 1 : 0, scale: isVisible ? 1 : 0.8 }}
+            transition={{ duration: 1, delay: 0.3 }}
+            className="relative"
+          >
+            <div className="bg-gradient-to-r from-blue-100 to-purple-100 dark:from-blue-900/20 dark:to-purple-900/20 rounded-3xl p-8 max-w-4xl mx-auto">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <motion.div
+                  whileHover={{ scale: 1.05 }}
+                  className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg"
+                >
+                  <BookOpen className="h-12 w-12 text-blue-600 mb-4" />
+                  <h3 className="font-semibold text-gray-800 dark:text-gray-200">Smart Summaries</h3>
+                </motion.div>
+                <motion.div
+                  whileHover={{ scale: 1.05 }}
+                  className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg"
+                >
+                  <Brain className="h-12 w-12 text-purple-600 mb-4" />
+                  <h3 className="font-semibold text-gray-800 dark:text-gray-200">AI Quizzes</h3>
+                </motion.div>
+                <motion.div
+                  whileHover={{ scale: 1.05 }}
+                  className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg"
+                >
+                  <PenTool className="h-12 w-12 text-green-600 mb-4" />
+                  <h3 className="font-semibold text-gray-800 dark:text-gray-200">Writing Help</h3>
+                </motion.div>
+              </div>
+            </div>
+          </motion.div>
+        </motion.div>
+      </div>
+    </section>
+  )
+}
