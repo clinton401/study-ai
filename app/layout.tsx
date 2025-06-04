@@ -7,6 +7,7 @@ import Navigation from "@/components/navigation";
 import Footer from "@/components/footer"
 import { Toaster } from "@/components/ui/toaster";
 import getServerUser from "@/hooks/get-server-user";
+import { Analytics } from "@vercel/analytics/next"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -99,9 +100,10 @@ export default async function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
+          <Analytics/>
           <Toaster/>
           <Navigation session={session}/>
-          <div className="min-h-dvh w-full bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800  md:pt-[100px] pt-[80px] pb-[50px] dark:to-purple-900 flex flex-col items-center justify-center px-4">
+          <div className="min-h-dvh w-full overflow-x-hidden bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800  md:pt-[100px] pt-[80px] pb-[50px] dark:to-purple-900 flex flex-col items-center justify-center px-4">
             {children}
           </div>
           <Footer />

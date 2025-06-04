@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { useState } from "react"
+import { useState, useRef } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import {
   Upload,
@@ -33,7 +33,8 @@ export function AIStudyToolsClient() {
   const [isProcessing, setIsProcessing] = useState(false)
   const [summary, setSummary] = useState("")
   const [summaryLength, setSummaryLength] = useState<"medium" | "short" | "long">("medium")
-  const [isExtractPending, setIsExtractPending] = useState(false)
+  const [isExtractPending, setIsExtractPending] = useState(false);
+  const targetRef = useRef<HTMLDivElement | null>(null);
   const { createError } = createToast();
 
   
@@ -137,6 +138,7 @@ export function AIStudyToolsClient() {
       if(error || !summary) return createError(error || ERROR_MESSAGES.UNKNOWN_ERROR);
       setSummary(summary);
 
+      targetRef.current?.scrollIntoView({ behavior: 'smooth' });
     }catch(error) {
       console.error(`Unable to generate summary: ${error}`);
       createError(ERROR_MESSAGES.INTERNAL_SERVER_ERROR);
@@ -244,7 +246,7 @@ export function AIStudyToolsClient() {
                     placeholder="Paste your notes, textbook content, or any study material here..."
                     value={inputText}
                     onChange={(e) => setInputText(e.target.value)}
-                    className="min-h-[150px] text-base leading-relaxed border-gray-200 dark:border-gray-700 focus:border-blue-500 dark:focus:border-blue-400 rounded-xl resize-none"
+                    className="min-h-[300px] text-base leading-relaxed border-gray-200 dark:border-gray-700 focus:border-blue-500 dark:focus:border-blue-400 rounded-xl resize-none"
                   />
                 </div>
 
@@ -287,8 +289,8 @@ export function AIStudyToolsClient() {
                     >
                       {isProcessing ? (
                         <>
-                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                          Processing...
+                          <Loader2 className="h-4 w-4  animate-spin" />
+                          {/* Processing... */}
                         </>
                       ) : (
                         <>
@@ -302,7 +304,7 @@ export function AIStudyToolsClient() {
               </CardContent>
             </Card>
           </motion.div>
-          <Card className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-0 shadow-xl rounded-3xl">
+          <Card className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-0 shadow-xl rounded-3xl" ref={targetRef}>
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle className="flex items-center space-x-2">
@@ -339,13 +341,13 @@ export function AIStudyToolsClient() {
                     exit={{ opacity: 0, y: -20 }}
                     className="space-y-4"
                   >
-                    <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-6">
+                    <div className="bg-blue-50 dark:bg-blue-900/20 w-full  border border-blue-200 dark:border-blue-800 rounded-xl p-6">
                       <pre className="whitespace-pre-wrap text-sm text-blue-800 dark:text-blue-200 font-sans leading-relaxed">
                         {summary}
                       </pre>
                     </div>
-                    <div className="flex items-center justify-between">
-                      <div className="flex space-x-2">
+                    <div className="flex items-center flex-wrap gap-2 justify-between">
+                      <div className="flex space-2 flex-wrap ">
                        <CopyExport content={summary} filename="summary" />
                       </div>
                       <Button

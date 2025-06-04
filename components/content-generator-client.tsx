@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { motion } from "framer-motion";
 import {
   PenTool,
@@ -96,6 +96,7 @@ export function ContentGeneratorClient() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [wordCount, setWordCount] = useState(0);
 
+  const targetRef = useRef<HTMLDivElement | null>(null);
   const { createError } = createToast();
 
   const handleGenerate = async () => {
@@ -121,6 +122,8 @@ export function ContentGeneratorClient() {
         return createError(error || ERROR_MESSAGES.UNKNOWN_ERROR);
       setGeneratedContent(content);
       setWordCount(content.split(" ").length);
+      
+    targetRef.current?.scrollIntoView({ behavior: 'smooth' });
     } catch (error) {
       console.error(`Unable to generate content: ${error}`);
       createError(ERROR_MESSAGES.INTERNAL_SERVER_ERROR);
@@ -312,8 +315,8 @@ export function ContentGeneratorClient() {
                   >
                     {isGenerating ? (
                       <>
-                        <Loader2 className="h-5 w-5 mr-2 animate-spin" />
-                        Generating Content...
+                        <Loader2 className="h-5 w-5  animate-spin" />
+                        {/* Generating Content... */}
                       </>
                     ) : (
                       <>
@@ -338,15 +341,15 @@ export function ContentGeneratorClient() {
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.8, delay: 0.2 }}
             >
-              <Card className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-0 shadow-xl rounded-3xl">
+              <Card className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-0 shadow-xl rounded-3xl" ref={targetRef}>
                 <CardHeader>
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 flex-wrap justify-between">
                     <CardTitle className="flex items-center space-x-2">
                       <FileText className="h-6 w-6 text-blue-600" />
                       <span>Generated Content</span>
                     </CardTitle>
                     {generatedContent && (
-                      <div className="flex space-x-2">
+                      <div className="flex space-2 flex-wrap">
                         <CopyExport
                           content={generatedContent}
                           filename="generated-content"
@@ -364,12 +367,11 @@ export function ContentGeneratorClient() {
                         </pre>
                       </div>
                       <div className="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400">
-                        <div className="flex items-center space-x-4">
+                        <div className="flex items-center flex-wrap gap-4 w-full">
                           <span>Words: {wordCount}</span>
                           <span>Type: {options.type}</span>
                           <span>Tone: {options.tone}</span>
                         </div>
-                        <span>Generated in 4.2s</span>
                       </div>
                     </div>
                   ) : (

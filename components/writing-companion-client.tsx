@@ -41,6 +41,7 @@ export function WritingCompanionClient() {
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
+  const targetRef = useRef<HTMLDivElement | null>(null);
   const { createError, createSimple } = createToast();
 
   const handleTextChange = (value: string) => {
@@ -85,6 +86,8 @@ export function WritingCompanionClient() {
       setSuggestions(grammarFixes)
 
       createSimple("Here are some grammar fixes you can review.");
+      
+    targetRef.current?.scrollIntoView({ behavior: 'smooth' });
 
       
     }catch(error){
@@ -280,7 +283,9 @@ export function WritingCompanionClient() {
                       ) : (
                         <Button
                           onClick={handleRephrase}
-                          disabled={!text.trim() || isRephrasing || isProcessing}
+                          disabled={
+                            !text.trim() || isRephrasing || isProcessing
+                          }
                           variant="outline"
                           className="rounded-xl border-purple-200 dark:border-purple-700 hover:bg-purple-50 dark:hover:bg-purple-900/20"
                         >
@@ -393,7 +398,7 @@ export function WritingCompanionClient() {
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.8, delay: 0.4 }}
               >
-                <Card className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-0 shadow-xl rounded-3xl">
+                <Card className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-0 shadow-xl rounded-3xl" ref={targetRef}>
                   <CardHeader>
                     <CardTitle className="flex items-center space-x-2">
                       <Wand2 className="h-5 w-5 text-purple-600" />
@@ -402,7 +407,7 @@ export function WritingCompanionClient() {
                   </CardHeader>
                   <CardContent>
                     {suggestions.length > 0 ? (
-                      <div className="space-y-3">
+                      <div className="space-y-3" >
                         {suggestions.map((suggestion, index) => (
                           <div
                             key={index}
@@ -426,8 +431,6 @@ export function WritingCompanionClient() {
                   </CardContent>
                 </Card>
               </motion.div>
-
-              
             </div>
           </div>
         </div>

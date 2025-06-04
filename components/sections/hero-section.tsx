@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
-import { ArrowRight, BookOpen, PenTool, Brain } from "lucide-react"
+import { ArrowRight, BookOpen, PenTool, Wand2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 
@@ -27,8 +27,8 @@ export function HeroSection() {
             Study Smarter with AI
           </h1>
           <p className="text-xl md:text-2xl text-gray-600 dark:text-gray-300 mb-8 max-w-3xl mx-auto">
-            A one-stop learning assistant for students: summarize notes, generate quiz questions, and improve writing
-            instantly with AI.
+            A one-stop learning assistant for students: summarize notes, generate essays and letters, and improve
+            writing instantly with AI.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16">
@@ -65,14 +65,14 @@ export function HeroSection() {
                   whileHover={{ scale: 1.05 }}
                   className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg"
                 >
-                  <Brain className="h-12 w-12 text-purple-600 mb-4" />
-                  <h3 className="font-semibold text-gray-800 dark:text-gray-200">AI Quizzes</h3>
+                  <Wand2 className="h-12 w-12 text-green-600 mb-4" />
+                  <h3 className="font-semibold text-gray-800 dark:text-gray-200">Content Generator</h3>
                 </motion.div>
                 <motion.div
                   whileHover={{ scale: 1.05 }}
                   className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg"
                 >
-                  <PenTool className="h-12 w-12 text-green-600 mb-4" />
+                  <PenTool className="h-12 w-12 text-purple-600 mb-4" />
                   <h3 className="font-semibold text-gray-800 dark:text-gray-200">Writing Help</h3>
                 </motion.div>
               </div>
