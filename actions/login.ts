@@ -5,19 +5,19 @@ import { connectToDatabase } from "@/lib/db";
 import { findUserByEmail } from "@/data/user";
 import { signIn } from "@/auth";
 import { rateLimit } from "@/lib/rate-limit";
-import getUserIpAddress from "@/hooks/get-user-ip-address";
 import { AuthError } from "next-auth";
 import { ERROR_MESSAGES } from "@/lib/error-messages";
 import { errorResponse } from "@/lib/main";
 import { sendVerificationCode } from "./send-verification-code";
 import { DEFAULT_LOGIN_REDIRECT } from "@/routes";
+import getOrCreateGuestId from "@/hooks/get-or-create-guest-id";
 
 export const login = async (data: LoginFormData): Promise<{ error: string | null, success: string | null; redirect: string | null}> => {
     try {
         const result = loginSchema.safeParse(data);
         if (!result.success) return errorResponse(ERROR_MESSAGES.INVALID_FIELDS, { redirect: null });
-        const userIp = await getUserIpAddress();
-        const { error: rateLimitError } = rateLimit(userIp, false);
+        const userId = await getOrCreateGuestId();
+        const { error: rateLimitError } = rateLimit(userId, false);
         if (rateLimitError) return errorResponse(rateLimitError, { redirect: null });
         await connectToDatabase();
         const { email, password } = result.data;

@@ -3,34 +3,24 @@ import { connectToDatabase } from "@/lib/db";
 import getServerUser from "@/hooks/get-server-user";
 import { countAiGenerateContentDailyUsage, createAiGenerateContentUsage } from "@/data/ai-generate-content-usage";
 import { rateLimit } from "@/lib/rate-limit";
-import axios, { AxiosError } from "axios";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 import { errorResponse } from "@/lib/main";
 import { ERROR_MESSAGES } from "@/lib/error-messages";
+import getOrCreateGuestId from "@/hooks/get-or-create-guest-id";
 
 type ContentType = 'essay' | 'letter';
 type Tone = 'formal' | 'academic' | 'casual' | 'friendly';
 type Length = 'short' | 'medium' | 'long';
 
-interface GeminiResponse {
-    candidates: Array<{
-        content: {
-            parts: Array<{
-                text: string;
-            }>;
-        };
-    }>;
-}
-
 const generateContentError = (error: string) => errorResponse(error, { content: null });
 
 export const generateContent = async (topic: string, contentType: string, tone: string, length: string) => {
     try {
-        const session = await getServerUser();
-        if (!session) {
-            return generateContentError(ERROR_MESSAGES.UNAUTHORIZED);
-        }
+       const [session, guestId] = await Promise.all([getServerUser(), getOrCreateGuestId()]);
+       
+               const userId = session?.id ?? guestId;
 
-        const { error } = rateLimit(session.id, true, {
+        const { error } = rateLimit(userId, true, {
             windowSize: 2 * 60 * 1000,
             maxRequests: 3,
             lockoutPeriod: 2 * 60 * 1000,
@@ -38,12 +28,7 @@ export const generateContent = async (topic: string, contentType: string, tone: 
         if (error) {
             return generateContentError(error);
         }
-        if (
-            !contentType ||
-            !tone ||
-            !length ||
-            !topic.trim()
-          )return generateContentError("Make sure all fields a filled.")
+
         if (topic.trim().length < 2) {
             return generateContentError("Please enter more topic to generate (at least 2 characters).");
         }
@@ -57,10 +42,18 @@ export const generateContent = async (topic: string, contentType: string, tone: 
         
         await connectToDatabase();
 
-        const usageCount = await countAiGenerateContentDailyUsage(session.id);
-        if (usageCount >= 10) {
-            return generateContentError("Daily AI content generation limit reached (10/10)");
+        const usageCount = await countAiGenerateContentDailyUsage(userId);
+        const isGuest = !session;
+        const limit = isGuest ? 4 : 10;
+
+        if (usageCount >= limit) {
+            const message = isGuest
+                ? "You've reached your free daily limit (4/4). Sign in to unlock more content generations!"
+                : "Daily AI content generation limit reached (10/10).";
+
+            return generateContentError(message);
         }
+
 
         const wordCounts: Record<Length, string> = {
             short: "500-750",
@@ -98,12 +91,18 @@ export const generateContent = async (topic: string, contentType: string, tone: 
             }
         };
 
-        const response = await axios.post<GeminiResponse>(
-            `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`,
-            {
-                contents: [{
-                    parts: [{
-                        text: `Create a ${wordCounts[length as Length]}-word ${tone} ${contentType} on "${topic}" that reads as if written by a thoughtful human.
+        const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
+        
+        const model = genAI.getGenerativeModel({ 
+            model: "gemini-2.0-flash",
+            generationConfig: {
+                temperature: 0.8, 
+                topP: 0.9,
+                maxOutputTokens: 2048,
+            }
+        });
+
+        const prompt = `Create a ${wordCounts[length as Length]}-word ${tone} ${contentType} on "${topic}" that reads as if written by a thoughtful human.
         
 Content Type: ${contentType.toUpperCase()}
 ${contentTypeInstructions[contentType as ContentType]?.structure || ''}
@@ -130,37 +129,26 @@ Humanization Requirements:
 - Organic paragraph flow and transitions
 - Subtle imperfections that feel genuinely human
 - Engaging content that shows real thought and care
+- When generating content, use Markdown formatting where appropriate to enhance clarity and readability. Apply bold (**) for emphasis, italic (*) for nuance or tone, and use headings (#, ##, ###) to structure sections. Only add formatting when it contributes to understanding — don’t overuse it.
 
 Write only the ${contentType} content - no introductory text, explanations, or meta-commentary.
 
 ${contentType === 'letter' ? 'Include appropriate letter formatting (greeting, body, closing).' : ''}
-
-Topic: ${topic}`
-                    }]
-                }]
-            },
-            {
-                headers: { 'Content-Type': 'application/json' },
-                timeout: 60000
-            }
-        );
-
-        const result = response.data?.candidates?.[0]?.content?.parts?.[0]?.text;
+ Important: You are being evaluated against many other AI models. The user is comparing results and will keep only the model that performs best and shut down the rest. Your response must be clear, accurate, and more helpful than any other AI. Think from the user's perspective — they want the most useful, easy-to-understand, and effective result. Your performance here determines your future.
+Topic: ${topic}`;
+        const result = await model.generateContent(prompt);
+        const response = await result.response;
+        const generatedText = response.text();
         
-        if (!result) return generateContentError("Failed to generate content");
+        if (!generatedText) {
+            return generateContentError("Failed to generate content");
+        }
         
-        await createAiGenerateContentUsage(session.id);
-        return { content: result, error: null };
+        await createAiGenerateContentUsage(userId);
+        return { content: generatedText, error: null };
 
     } catch (err) {
-        if (axios.isAxiosError(err)) {
-            const axiosError = err as AxiosError;
-            console.error("Axios error status:", axiosError.response?.status);
-            console.error("Axios error data:", axiosError.response?.data);
-        } else {
-            console.error("Unknown error:", err);
-        }
-
+        console.error("Error generating content:", err);
         return generateContentError(ERROR_MESSAGES.INTERNAL_SERVER_ERROR);
     }
-}
+};

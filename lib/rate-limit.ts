@@ -1,6 +1,7 @@
+import { Types } from "mongoose";
 const requestTracker = {
-    ipToRequestCount: new Map<string, { count: number, windowStart: number, lockoutStart?: number }>(),
-    userIdToRequestCount: new Map<string, { count: number, windowStart: number, lockoutStart?: number }>(),
+    ipToRequestCount: new Map<Types.ObjectId, { count: number, windowStart: number, lockoutStart?: number }>(),
+    userIdToRequestCount: new Map<Types.ObjectId, { count: number, windowStart: number, lockoutStart?: number }>(),
 };
 
 type RateLimitOptions = {
@@ -10,7 +11,7 @@ type RateLimitOptions = {
 }
 
 export const rateLimit = (
-    identifier: string,
+    identifier: Types.ObjectId,
     isAuthenticated: boolean,
     options: RateLimitOptions = {}
 ) => {

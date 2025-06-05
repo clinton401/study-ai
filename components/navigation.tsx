@@ -90,7 +90,11 @@ useEffect(() => {
               <Link
                 key={item.name}
                 href={item.href}
-                className={` hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200 ${pathname === item.href ? "text-blue-500 ": "text-gray-700 dark:text-gray-300"}`}
+                className={` hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200 ${
+                  pathname === item.href
+                    ? "text-blue-500 "
+                    : "text-gray-700 dark:text-gray-300"
+                }`}
               >
                 {item.name}
               </Link>
@@ -120,24 +124,28 @@ useEffect(() => {
               ) : (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="outline" className="rounded-full max-w-[150px] truncate">Clinton <ChevronDown /> </Button>
+                    <Button
+                      variant="outline"
+                      className="rounded-full max-w-[150px] truncate"
+                    >
+                      Clinton <ChevronDown />{" "}
+                    </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent className="w-56" align="start">
-                    
-                      <DropdownMenuItem onClick={() => push("/settings")}>
-                        Settings
-                        
-                      </DropdownMenuItem>
-                     
-                    
-                    <DropdownMenuItem onClick={handleLogout} disabled={isPending}>
+                    <DropdownMenuItem onClick={() => push("/settings")}>
+                      Settings
+                    </DropdownMenuItem>
+
+                    <DropdownMenuItem
+                      onClick={handleLogout}
+                      disabled={isPending}
+                    >
                       Log out
                       {isPending && (
                         <DropdownMenuShortcut>
-                          <Loader className="size-3 animate-spin"/>
+                          <Loader className="size-3 animate-spin" />
                         </DropdownMenuShortcut>
-
-                        )}
+                      )}
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
@@ -172,7 +180,11 @@ useEffect(() => {
                 <Link
                   key={item.name}
                   href={item.href}
-                  className="block text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200"
+                  className={`block ${
+                    pathname === item.href
+                      ? "text-blue-500 "
+                      : "text-gray-700 dark:text-gray-300"
+                  } hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200`}
                   onClick={() => setIsMenuOpen(false)}
                 >
                   {item.name}
@@ -182,32 +194,35 @@ useEffect(() => {
                 {!session ? (
                   <>
                     <Link href="/login">
-                    <Button variant="ghost" className="w-full justify-start" >
-                      Login
-                    </Button>
-                  </Link>
-                  <Link href="/register">
-                    <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white">
-                      Register
-                    </Button>
-                  </Link>
+                      <Button variant="ghost" className="w-full justify-start">
+                        Login
+                      </Button>
+                    </Link>
+                    <Link href="/register">
+                      <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white">
+                        Register
+                      </Button>
+                    </Link>
                   </>
                 ) : (
                   <>
-                  <Link href="/settings">
-                  <Button variant="ghost" className="w-full justify-start">
-                    Settings
-                  </Button>
-                </Link>
-                  <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white" onClick={handleLogout} disabled={isPending}>
-                    Log out {isPending && (
-                      
-                      <Loader className="size-3 animate-spin ml-1"/>
-                    )}
-                  </Button>
-                </>
+                    <Link href="/settings">
+                      <Button variant="ghost" className="w-full justify-start">
+                        Settings
+                      </Button>
+                    </Link>
+                    <Button
+                      className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+                      onClick={handleLogout}
+                      disabled={isPending}
+                    >
+                      Log out{" "}
+                      {isPending && (
+                        <Loader className="size-3 animate-spin ml-1" />
+                      )}
+                    </Button>
+                  </>
                 )}
-              
               </div>
             </div>
           </motion.div>

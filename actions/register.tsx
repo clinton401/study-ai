@@ -7,7 +7,7 @@ import { RegisterFormData, registerSchema } from "@/lib/validations/auth";
 import {ERROR_MESSAGES} from "@/lib/error-messages";
 import { sendVerificationCode } from "./send-verification-code";
 import { rateLimit } from "@/lib/rate-limit";
-import getUserIpAddress from "@/hooks/get-user-ip-address";
+import getOrCreateGuestId from "@/hooks/get-or-create-guest-id";
 
 
 
@@ -15,8 +15,8 @@ export const register = async(values: RegisterFormData) => {
 try{
     const result = registerSchema.safeParse(values);
     if (!result.success) return errorResponse(ERROR_MESSAGES.INVALID_FIELDS, {redirect: null});
-    const userIp = await getUserIpAddress();
-    const { error: rateLimitError } = rateLimit(userIp, false);
+    const userId = await getOrCreateGuestId();
+    const { error: rateLimitError } = rateLimit(userId, false);
         if (rateLimitError) return errorResponse(rateLimitError, { redirect: null });
     await connectToDatabase();
     const {email, password, name} = result.data;

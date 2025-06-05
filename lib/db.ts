@@ -16,7 +16,6 @@ export const connectToDatabase = async () => {
   try {
     const { connection } = await mongoose.connect(MONGODB_URI);
     if (connection.readyState === 1) {
-      console.log("MongoDB Connected");
       return Promise.resolve(true);
     }
   } catch (error) {

@@ -16,9 +16,9 @@ export const CopyExport: FC<{ content: string; filename: string}> = ({content, f
     }
   }
 
-  const downloadHandler = () => {
+  const downloadHandler = async () => {
       try {
-          handleDownload(content, filename);
+          await handleDownload(content, filename);
                 setExportSuccess(true);
                 setTimeout(() => setExportSuccess(false), 2000);
       }catch(error){

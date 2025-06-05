@@ -10,15 +10,15 @@ import { sendEmail } from "@/lib/mailer";
 import { errorResponse, otpGenerator } from "@/lib/main";
 import { Types } from "mongoose";
 import { rateLimit } from "@/lib/rate-limit";
-import getUserIpAddress from "@/hooks/get-user-ip-address";
+import getOrCreateGuestId from "@/hooks/get-or-create-guest-id";
 
 
 export const sendVerificationCode = async (userId: Types.ObjectId | string, email?: string) => {
     try {
-        
-            const userIp = await getUserIpAddress();
-            const { error } = rateLimit(userIp, false);
-            if(error) return errorResponse(error)
+
+        const guestId = await getOrCreateGuestId();
+        const { error } = rateLimit(guestId, false);
+        if (error) return errorResponse(error)
         await connectToDatabase();
         const validId = new Types.ObjectId(userId);
         let validEmail = email;

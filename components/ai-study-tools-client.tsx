@@ -24,7 +24,7 @@ import { ERROR_MESSAGES } from "@/lib/error-messages"
 import { summarizeText } from "@/actions/summarize-text";
 import extractTextFromPDF from "react-pdftotext";
 import {validateFileSize} from "@/lib/main";
-import { CopyExport } from "./copy-exports"
+import { CopyExport } from "./copy-exports";
 
 
 export function AIStudyToolsClient() {
@@ -36,44 +36,58 @@ export function AIStudyToolsClient() {
   const [isExtractPending, setIsExtractPending] = useState(false);
   const targetRef = useRef<HTMLDivElement | null>(null);
   const { createError } = createToast();
+  const inputRef = useRef<HTMLInputElement | null>(null);
 
   
   const getFileType = (file: File) => {
-    const extension = file.name.split(".").pop()?.toLowerCase();
+    
 
-    if (file.type === "application/pdf" || extension === "pdf") {
+    const nameParts = file.name.split(".");
+    const extension = nameParts.length > 1 ? nameParts.pop()!.toLowerCase() : "";
+  
+    const type = file.type.toLowerCase();
+    
+  
+    if (type.includes("pdf") || extension === "pdf") {
       return "pdf";
     } else if (
-      file.type ===
-        "application/vnd.openxmlformats-officedocument.wordprocessingml.document" ||
-      extension === "docx"
+      type.includes("wordprocessingml") || extension === "docx"
     ) {
       return "docx";
-    } else if (file.type === "text/plain" || extension === "txt") {
+    } else if (type.includes("text") || extension === "txt") {
       return "txt";
     }
-
+  
     return null;
   };
-  const extractText = async (file: File): Promise<string | null> => {
+  
+  const extractText = async (file: File): Promise<{
+    error: string | null;
+    text: string | null
+  }> => {
     const fileType = getFileType(file);
+    if (!fileType) return { error: 'Unsupported file type. Please upload a PDF, DOCX, or TXT file.', text: null };
     let text: string | null = null;
   
+   
+
     switch (fileType) {
-      case 'pdf':
+      case "pdf":
         text = await extractTextFromPDF(file);
         break;
-      case 'docx':
+      case "docx":
         text = await extractTextFromDocx(file);
         break;
-      case 'txt':
+      case "txt":
         text = await extractTextFromTxt(file);
         break;
-      default:
-        return null;
     }
-  
-    return text;
+
+    if (!text) {
+      return { error: "No extractable text found. Is the file scanned or empty?", text: null };
+    }
+
+    return { text, error: null };
   };
   
   const handleFileUpload = async(event: React.ChangeEvent<HTMLInputElement>) => {
@@ -85,8 +99,8 @@ export function AIStudyToolsClient() {
       
     try{
       setIsExtractPending(true)
-      const text = await extractText(file);
-      if(!text) return createError(' Please upload a PDF, DOCX, or TXT file.', "Unsupported file type")
+      const {error, text} = await extractText(file);
+      if(error || !text) return createError(error || ERROR_MESSAGES.UNKNOWN_ERROR)
         setUploadedFile(file);
       setInputText(text) 
     }catch(error) {
@@ -111,12 +125,10 @@ export function AIStudyToolsClient() {
     if(error) return createError(error);
     try {
       setIsExtractPending(true);
-      const text = await extractText(file);
-      if (!text)
-        return createError(
-          " Please upload a PDF, DOCX, or TXT file.",
-          "Unsupported file type"
-        );
+     
+      const { error, text } = await extractText(file);
+      if (error || !text)
+        return createError(error || ERROR_MESSAGES.UNKNOWN_ERROR);
       setUploadedFile(file);
       setInputText(text);
     } catch (error) {
@@ -207,6 +219,7 @@ export function AIStudyToolsClient() {
                   className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl p-8 text-center hover:border-blue-500 transition-colors cursor-pointer"
                   onDragOver={handleDragOver}
                   onDrop={handleDrop}
+                  onClick={() => inputRef.current?.click()}
                 >
                   <input
                     type="file"
@@ -214,8 +227,9 @@ export function AIStudyToolsClient() {
                     onChange={handleFileUpload}
                     className="hidden"
                     id="file-upload"
+                    ref={inputRef}
                   />
-                  <label htmlFor="file-upload" className="cursor-pointer">
+                  <label  className="cursor-pointer">
                     <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                     <p className="text-gray-600 dark:text-gray-300 mb-2">
                       {uploadedFile ? (

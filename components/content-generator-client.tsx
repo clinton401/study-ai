@@ -29,6 +29,7 @@ import { CopyExport } from "./copy-exports";
 import { generateContent } from "@/actions/generate-content";
 import createToast from "@/hooks/create-toast";
 import { ERROR_MESSAGES } from "@/lib/error-messages";
+import {AIContentDisplay} from "./ai-content-display"
 
 interface ContentOptions {
   type: string;
@@ -362,8 +363,9 @@ export function ContentGeneratorClient() {
                   {generatedContent ? (
                     <div className="space-y-4">
                       <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-6 max-h-96 overflow-y-auto">
-                        <pre className="whitespace-pre-wrap text-sm text-blue-800 dark:text-blue-200 font-sans leading-relaxed">
-                          {generatedContent}
+                        <pre className="whitespace-pre-wrap text-sm text-primary-foreground text-blue-800 dark:text-blue-200 font-sans leading-relaxed">
+                          {/* {generatedContent} */}
+                          <AIContentDisplay content={generatedContent}/>
                         </pre>
                       </div>
                       <div className="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400">

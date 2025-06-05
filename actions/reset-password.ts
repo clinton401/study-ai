@@ -6,7 +6,7 @@ import { ERROR_MESSAGES } from "@/lib/error-messages";
 import { errorResponse, hasExpired } from "@/lib/main";
 import { resetPasswordSchema, ResetPasswordFormData } from "@/lib/validations/auth";
 import { rateLimit } from "@/lib/rate-limit";
-import getUserIpAddress from "@/hooks/get-user-ip-address";
+import getOrCreateGuestId from "@/hooks/get-or-create-guest-id";
 import { Types } from "mongoose";
 import { validatePassword, hashPassword } from "@/lib/password-utils";
 
@@ -14,8 +14,8 @@ export const resetPassword = async (data: ResetPasswordFormData, userId: string,
     const result = resetPasswordSchema.safeParse(data);
     if (!result.success) return errorResponse(ERROR_MESSAGES.INVALID_FIELDS);
     try {
-        const userIp = await getUserIpAddress();
-        const { error } = rateLimit(userIp, false);
+        const userId = await getOrCreateGuestId();
+        const { error } = rateLimit(userId, false);
         if (error) return errorResponse(error);
         const { password } = result.data;
         await connectToDatabase();

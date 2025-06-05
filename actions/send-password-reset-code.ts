@@ -10,7 +10,7 @@ import { sendEmail } from "@/lib/mailer";
 import { errorResponse, otpGenerator } from "@/lib/main";
 import { forgotPasswordSchema, ForgotPasswordFormData } from "@/lib/validations/auth";
 import { rateLimit } from "@/lib/rate-limit";
-import getUserIpAddress from "@/hooks/get-user-ip-address";
+import getOrCreateGuestId from "@/hooks/get-or-create-guest-id";
 
 
 export const sendPasswordResetCode = async (data: ForgotPasswordFormData, domain: string) => {
@@ -18,8 +18,8 @@ export const sendPasswordResetCode = async (data: ForgotPasswordFormData, domain
     if (!result.success) return errorResponse(ERROR_MESSAGES.INVALID_FIELDS);
     try {
         
-    const userIp = await getUserIpAddress();
-        const { error } = rateLimit(userIp, false);
+        const guestId = await getOrCreateGuestId();
+        const { error } = rateLimit(guestId, false);
         if (error) return errorResponse(error);
         await connectToDatabase();
         const { email } = result.data;
