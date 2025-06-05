@@ -4,11 +4,13 @@ import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
 import { ArrowRight, BookOpen, PenTool, Wand2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import Link from "next/link"
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 // Client Component - handles animations and interactivity
 export function HeroSection() {
-  const [isVisible, setIsVisible] = useState(false)
+  const [isVisible, setIsVisible] = useState(false);
+  const { push } = useRouter();
 
   useEffect(() => {
     setIsVisible(true)
@@ -56,10 +58,11 @@ export function HeroSection() {
             className="relative"
           >
             <div className="bg-gradient-to-r from-blue-100 to-purple-100 dark:from-blue-900/20 dark:to-purple-900/20 rounded-3xl p-8 max-w-4xl mx-auto">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 *:cursor-pointer md:grid-cols-3 gap-6">
                 <motion.div
                   whileHover={{ scale: 1.05 }}
                   className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg"
+                  onClick={() => push("/content-generator")}
                 >
                   <Wand2 className="h-12 w-12 text-green-600 mb-4" />
                   <h3 className="font-semibold text-gray-800 dark:text-gray-200">
@@ -69,6 +72,7 @@ export function HeroSection() {
                 <motion.div
                   whileHover={{ scale: 1.05 }}
                   className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg"
+                  onClick={() => push("/writing-companion")}
                 >
                   <PenTool className="h-12 w-12 text-purple-600 mb-4" />
                   <h3 className="font-semibold text-gray-800 dark:text-gray-200">
@@ -78,6 +82,7 @@ export function HeroSection() {
                 <motion.div
                   whileHover={{ scale: 1.05 }}
                   className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg"
+                  onClick={() => push("/ai-study-tools")}
                 >
                   <BookOpen className="h-12 w-12 text-blue-600 mb-4" />
                   <h3 className="font-semibold text-gray-800 dark:text-gray-200">

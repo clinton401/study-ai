@@ -350,7 +350,7 @@ export function ContentGeneratorClient() {
                       <span>Generated Content</span>
                     </CardTitle>
                     {generatedContent && (
-                      <div className="flex space-2 flex-wrap">
+                      <div className="flex gap-2 flex-wrap">
                         <CopyExport
                           content={generatedContent}
                           filename="generated-content"
