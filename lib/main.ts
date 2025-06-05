@@ -1,6 +1,5 @@
 import { marked } from "marked";
 import removeMarkdown from "remove-markdown";
-import jsPDF from "jspdf";
 
 export const errorResponse = <T extends Record<string, any> = {}>(
   error: string,
