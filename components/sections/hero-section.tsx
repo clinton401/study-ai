@@ -27,13 +27,16 @@ export function HeroSection() {
             Study Smarter with AI
           </h1>
           <p className="text-xl md:text-2xl text-gray-600 dark:text-gray-300 mb-8 max-w-3xl mx-auto">
-            A one-stop learning assistant for students: summarize notes, generate essays and letters, and improve
-            writing instantly with AI.
+            A one-stop learning assistant for students: summarize notes,
+            generate essays and letters, and improve writing instantly with AI.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16">
-            <Link href="/writing-companion">
-              <Button size="lg" className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 text-lg rounded-full">
+            <Link href="/content-generator">
+              <Button
+                size="lg"
+                className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 text-lg rounded-full"
+              >
                 Explore Now
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
@@ -54,27 +57,32 @@ export function HeroSection() {
           >
             <div className="bg-gradient-to-r from-blue-100 to-purple-100 dark:from-blue-900/20 dark:to-purple-900/20 rounded-3xl p-8 max-w-4xl mx-auto">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-               
                 <motion.div
                   whileHover={{ scale: 1.05 }}
                   className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg"
                 >
                   <Wand2 className="h-12 w-12 text-green-600 mb-4" />
-                  <h3 className="font-semibold text-gray-800 dark:text-gray-200">Content Generator</h3>
+                  <h3 className="font-semibold text-gray-800 dark:text-gray-200">
+                    Content Generator
+                  </h3>
                 </motion.div>
                 <motion.div
                   whileHover={{ scale: 1.05 }}
                   className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg"
                 >
                   <PenTool className="h-12 w-12 text-purple-600 mb-4" />
-                  <h3 className="font-semibold text-gray-800 dark:text-gray-200">Writing Help</h3>
+                  <h3 className="font-semibold text-gray-800 dark:text-gray-200">
+                    Writing Help
+                  </h3>
                 </motion.div>
                 <motion.div
                   whileHover={{ scale: 1.05 }}
                   className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg"
                 >
                   <BookOpen className="h-12 w-12 text-blue-600 mb-4" />
-                  <h3 className="font-semibold text-gray-800 dark:text-gray-200">Smart Summaries</h3>
+                  <h3 className="font-semibold text-gray-800 dark:text-gray-200">
+                    Smart Summaries
+                  </h3>
                 </motion.div>
               </div>
             </div>
@@ -82,5 +90,5 @@ export function HeroSection() {
         </motion.div>
       </div>
     </section>
-  )
+  );
 }
