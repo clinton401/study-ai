@@ -142,7 +142,7 @@ export function AIStudyToolsClient() {
   const handleGenerateSummary = async () => {
 
   if(inputText.length < 200) return createError("Text to be summarized must have minimum 200 characters");
-    if(inputText.length > 100000) return createError("Text to be summarized must have maximum 100,000 characters");
+    if(inputText.length > 200000) return createError("Text to be summarized must have maximum 200,000 characters");
     try{
       setIsProcessing(true);
       setSummary("");

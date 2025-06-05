@@ -29,8 +29,8 @@ export const summarizeText = async (
     return summaryError("Please enter more text to summarize (at least 200 characters).");
   }
 
-  if (text.length > 100_000) {
-    return summaryError("Text to be summarized must have maximum 100,000 characters");
+  if (text.length > 200_000) {
+    return summaryError("Text to be summarized must have maximum 200,000 characters");
   }
 
   const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
