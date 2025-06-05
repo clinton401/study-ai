@@ -363,7 +363,7 @@ export function ContentGeneratorClient() {
                   {generatedContent ? (
                     <div className="space-y-4">
                       <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-6 max-h-96 overflow-y-auto">
-                        <pre className="whitespace-pre-wrap text-sm text-primary-foreground text-blue-800 dark:text-blue-200 font-sans leading-relaxed">
+                        <pre className="whitespace-pre-wrap text-sm  text-blue-800 dark:text-blue-200 font-sans leading-relaxed">
                           {/* {generatedContent} */}
                           <AIContentDisplay content={generatedContent}/>
                         </pre>
