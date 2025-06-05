@@ -7,13 +7,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 
 const features = [
-  {
-    icon: BookOpen,
-    title: "Note Summarizer",
-    description:
-      "Upload notes or PDFs to get smart, concise summaries that help you study faster.",
-    href: "/ai-study-tools",
-  },
+  
   {
     icon: Wand2,
     title: "Content Generator",
@@ -27,6 +21,13 @@ const features = [
     description:
       "Fix grammar, adjust tone, and rephrase text to improve your writing instantly.",
     href: "/writing-companion",
+  },
+  {
+    icon: BookOpen,
+    title: "Note Summarizer",
+    description:
+      "Upload notes or PDFs to get smart, concise summaries that help you study faster.",
+    href: "/ai-study-tools",
   },
 ];
 

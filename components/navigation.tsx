@@ -42,9 +42,9 @@ useEffect(() => {
   const navItems = [
     { name: "Home", href: "/" },
     { name: "Features", href: "/features" },
-    { name: "AI Study Tools", href: "/ai-study-tools" },
-    { name: "Writing Companion", href: "/writing-companion" },
     { name: "Content Generator", href: "/content-generator" },
+    { name: "Writing Companion", href: "/writing-companion" },
+    { name: "AI Study Tools", href: "/ai-study-tools" },
   ]
   const handleLogout = async () => {
     if (isPending) return;

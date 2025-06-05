@@ -355,11 +355,6 @@ export function AIStudyToolsClient() {
                     exit={{ opacity: 0, y: -20 }}
                     className="space-y-4"
                   >
-                    <div className="bg-blue-50 dark:bg-blue-900/20 w-full  border border-blue-200 dark:border-blue-800 rounded-xl p-6">
-                      <pre className="whitespace-pre-wrap text-sm text-blue-800 dark:text-blue-200 font-sans leading-relaxed">
-                        {summary}
-                      </pre>
-                    </div>
                     <div className="flex items-center flex-wrap gap-2 justify-between">
                       <div className="flex space-2 flex-wrap ">
                        <CopyExport content={summary} filename="summary" />
@@ -374,6 +369,12 @@ export function AIStudyToolsClient() {
                         Generate New
                       </Button>
                     </div>
+                    <div className="bg-blue-50 dark:bg-blue-900/20 w-full  border border-blue-200 dark:border-blue-800 rounded-xl p-6">
+                      <pre className="whitespace-pre-wrap text-sm text-blue-800 dark:text-blue-200 font-sans leading-relaxed">
+                        {summary}
+                      </pre>
+                    </div>
+                    
                   </motion.div>
                 ) : (
                   <motion.div

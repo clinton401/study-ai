@@ -7,19 +7,7 @@ import { Button } from "@/components/ui/button"
 import Link from "next/link"
 
 const features = [
-  {
-    icon: BookOpen,
-    title: "Note Summarizer",
-    description: "Transform lengthy notes and PDFs into concise, actionable summaries that capture the key points.",
-    benefits: [
-      "Upload PDFs, Word docs, or paste text directly",
-      "AI identifies and extracts key concepts",
-      "Customizable summary length and detail",
-      "Highlight important terms and definitions",
-    ],
-    color: "from-blue-500 to-blue-600",
-    href: "/ai-study-tools",
-  },
+  
   {
     icon: Wand2,
     title: "Content Generator",
@@ -46,6 +34,19 @@ const features = [
     ],
     color: "from-purple-500 to-purple-600",
     href: "/writing-companion",
+  },
+  {
+    icon: BookOpen,
+    title: "Note Summarizer",
+    description: "Transform lengthy notes and PDFs into concise, actionable summaries that capture the key points.",
+    benefits: [
+      "Upload PDFs, Word docs, or paste text directly",
+      "AI identifies and extracts key concepts",
+      "Customizable summary length and detail",
+      "Highlight important terms and definitions",
+    ],
+    color: "from-blue-500 to-blue-600",
+    href: "/ai-study-tools",
   },
 ]
 
