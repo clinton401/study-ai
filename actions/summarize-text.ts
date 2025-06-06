@@ -20,7 +20,7 @@ export const summarizeText = async (
 
   const { error } = rateLimit(userId, true, {
     windowSize: 2 * 60 * 1000,
-    maxRequests: 3,
+    maxRequests: 5,
     lockoutPeriod: 2 * 60 * 1000,
   });
   if (error) return summaryError(error);
