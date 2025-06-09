@@ -1,30 +1,23 @@
-# Modern student platform
+# StudyAii
 
-*Automatically synced with your [v0.dev](https://v0.dev) deployments*
+**StudyAii** is a free web-based tool designed to help students study smarter, not harder.
 
-[![Deployed on Vercel](https://img.shields.io/badge/Deployed%20on-Vercel-black?style=for-the-badge&logo=vercel)](https://vercel.com/clintons-projects-ca932839/v0-modern-student-platform)
-[![Built with v0](https://img.shields.io/badge/Built%20with-v0.dev-black?style=for-the-badge)](https://v0.dev/chat/projects/uBVgw0IQNPN)
+You can upload your lecture notes or PDF documents and get clean, focused summaries. It also includes a writing assistant to help with assignments, essays, and general content generation. The tool remembers your previous inputs, so you can build on past uploads and conversations without starting over each time.
 
-## Overview
+Key features:
+- 📄 Upload PDFs and receive smart, accurate summaries
+- ✍️ Get writing help for essays, assignments, or general content
+- 📌 Memory-based responses so your past interactions are not lost
+- 🧠 (Coming soon) Quiz generation from uploaded content
 
-This repository will stay in sync with your deployed chats on [v0.dev](https://v0.dev).
-Any changes you make to your deployed app will be automatically pushed to this repository from [v0.dev](https://v0.dev).
+Built with:
+- **React** (frontend)
+- **Node.js + Express** (backend)
+- **Tailwind CSS**
+- **Supabase** for storage
+- **Prisma** as ORM
+- **Google’s Gemini 2.0 API** for text generation
 
-## Deployment
+No account is required to use the app — it's open and free for anyone to try.
 
-Your project is live at:
-
-**[https://vercel.com/clintons-projects-ca932839/v0-modern-student-platform](https://vercel.com/clintons-projects-ca932839/v0-modern-student-platform)**
-
-## Build your app
-
-Continue building your app on:
-
-**[https://v0.dev/chat/projects/uBVgw0IQNPN](https://v0.dev/chat/projects/uBVgw0IQNPN)**
-
-## How It Works
-
-1. Create and modify your project using [v0.dev](https://v0.dev)
-2. Deploy your chats from the v0 interface
-3. Changes are automatically pushed to this repository
-4. Vercel deploys the latest version from this repository
+🔗 Live site: [https://studyaii.vercel.app](https://studyaii.vercel.app)
