@@ -11,12 +11,10 @@ Key features:
 - 🧠 (Coming soon) Quiz generation from uploaded content
 
 Built with:
-- **React** (frontend)
-- **Node.js + Express** (backend)
+- **Next.js** (frontend + backend)
 - **Tailwind CSS**
-- **Supabase** for storage
-- **Prisma** as ORM
-- **Google’s Gemini 2.0 API** for text generation
+- **MongoDB** for Database
+- **Google’s Gemini 2.0 API** for  generation
 
 No account is required to use the app — it's open and free for anyone to try.
 
