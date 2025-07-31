@@ -13,6 +13,7 @@ import {
   Users,
   Briefcase,
   GraduationCap,
+  Notebook
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -38,53 +39,7 @@ interface ContentOptions {
   topic: string;
 }
 
-const contentTypes = [
-  {
-    value: "essay",
-    label: "Essay",
-    icon: FileText,
-    description: "Academic or persuasive essays",
-  },
-  {
-    value: "letter",
-    label: "Letter",
-    icon: Mail,
-    description: "Formal or informal letters",
-  },
-];
 
-const toneOptions = [
-  {
-    value: "formal",
-    label: "Formal",
-    icon: Briefcase,
-    description: "Professional and structured",
-  },
-  {
-    value: "academic",
-    label: "Academic",
-    icon: GraduationCap,
-    description: "Scholarly and research-focused",
-  },
-  {
-    value: "casual",
-    label: "Casual",
-    icon: Users,
-    description: "Relaxed and conversational",
-  },
-  {
-    value: "friendly",
-    label: "Friendly",
-    icon: Users,
-    description: "Warm and approachable",
-  },
-];
-
-const lengthOptions = [
-  { value: "short", label: "Short", description: "500-750 words" },
-  { value: "medium", label: "Medium", description: "750-1200 words" },
-  { value: "long", label: "Long", description: "1200-2000 words" },
-];
 
 export function ContentGeneratorClient() {
   const [options, setOptions] = useState<ContentOptions>({
@@ -93,13 +48,77 @@ export function ContentGeneratorClient() {
     length: "",
     topic: "",
   });
-  const [generatedContent, setGeneratedContent] = useState("");
+  const [generatedContent, setGeneratedContent] = useState(``);
   const [isGenerating, setIsGenerating] = useState(false);
   const [wordCount, setWordCount] = useState(0);
 
   const targetRef = useRef<HTMLDivElement | null>(null);
   const { createError } = createToast();
-
+  const contentTypes = [
+    {
+      value: "essay",
+      label: "Essay",
+      icon: FileText,
+      description: "Academic or persuasive essays",
+    },
+    {
+      value: "letter",
+      label: "Letter",
+      icon: Mail,
+      description: "Formal or informal letters",
+    },
+    {
+      value: "term-paper",
+      label: "Term Paper",
+      icon: Notebook,
+      description: "Research-based academic paper for a course",
+    }
+  ];
+  
+  const toneOptions = [
+    {
+      value: "formal",
+      label: "Formal",
+      icon: Briefcase,
+      description: "Professional and structured",
+    },
+    {
+      value: "academic",
+      label: "Academic",
+      icon: GraduationCap,
+      description: "Scholarly and research-focused",
+    },
+    {
+      value: "casual",
+      label: "Casual",
+      icon: Users,
+      description: "Relaxed and conversational",
+    },
+    {
+      value: "friendly",
+      label: "Friendly",
+      icon: Users,
+      description: "Warm and approachable",
+    },
+  ];
+  const getLengthOptions = (type: string) => {
+    const isTermPaper = type.toLowerCase() === "term-paper";
+  
+    if (isTermPaper) {
+      return [
+        { value: "short", label: "Short", description: "1–5 pages" },
+        { value: "medium", label: "Medium", description: "6–10 pages" },
+        { value: "long", label: "Long", description: "11–15 pages" },
+      ];
+    }
+  
+    return [
+      { value: "short", label: "Short", description: "500–750 words" },
+      { value: "medium", label: "Medium", description: "750–1200 words" },
+      { value: "long", label: "Long", description: "1200–2000 words" },
+    ];
+  };
+  const lengthOptions =  getLengthOptions(options.type);
   const handleGenerate = async () => {
     if (
       !options.type ||
@@ -198,7 +217,12 @@ export function ContentGeneratorClient() {
                       }
                     >
                       <SelectTrigger className="h-12 rounded-xl border-gray-200 dark:border-gray-700">
-                        <SelectValue placeholder="Choose what you want to create" />
+                        <SelectValue placeholder="Choose what you want to create">
+                          {options.type
+                            ? contentTypes.find((t) => t.value === options.type)
+                                ?.label
+                            : null}
+                        </SelectValue>
                       </SelectTrigger>
                       <SelectContent>
                         {contentTypes.map((type) => (
@@ -230,7 +254,12 @@ export function ContentGeneratorClient() {
                       }
                     >
                       <SelectTrigger className="h-12 rounded-xl border-gray-200 dark:border-gray-700">
-                        <SelectValue placeholder="Select the tone for your content" />
+                        <SelectValue placeholder="Select the tone for your content">
+                          {options.tone
+                            ? toneOptions.find((t) => t.value === options.tone)
+                                ?.label
+                            : null}
+                        </SelectValue>
                       </SelectTrigger>
                       <SelectContent>
                         {toneOptions.map((tone) => (
@@ -262,7 +291,13 @@ export function ContentGeneratorClient() {
                       }
                     >
                       <SelectTrigger className="h-12 rounded-xl border-gray-200 dark:border-gray-700">
-                        <SelectValue placeholder="Choose the length of your content" />
+                        <SelectValue placeholder="Choose the length of your content">
+                          {options.length
+                            ? lengthOptions.find(
+                                (l) => l.value === options.length
+                              )?.label
+                            : null}
+                        </SelectValue>
                       </SelectTrigger>
                       <SelectContent>
                         {lengthOptions.map((length) => (
@@ -291,6 +326,8 @@ export function ContentGeneratorClient() {
                           ? "e.g., The Impact of Technology on Education"
                           : options.type === "letter"
                           ? "e.g., Application for Summer Internship"
+                          : options.type.toLowerCase() === "term-paper"
+                          ? "e.g., Climate Change Policy Analysis"
                           : "Enter your topic or subject here..."
                       }
                       value={options.topic}
@@ -299,13 +336,17 @@ export function ContentGeneratorClient() {
                       }
                       className="h-12 rounded-xl border-gray-200 dark:border-gray-700 focus:border-green-500 dark:focus:border-green-400"
                     />
-                    <p className="text-xs text-gray-500 dark:text-gray-400">
-                      {options.type === "essay"
-                        ? "Provide a clear essay topic or thesis statement"
-                        : options.type === "letter"
-                        ? "Describe the purpose or main subject of your letter"
-                        : "Be specific about what you want to write about"}
-                    </p>
+
+<p className="text-xs text-gray-500 dark:text-gray-400">
+  {options.type === "essay"
+    ? "Provide a clear essay topic or thesis statement"
+    : options.type === "letter"
+    ? "Describe the purpose or main subject of your letter"
+    : options.type.toLowerCase() === "term-paper"
+    ? "Enter a detailed research topic for your term paper"
+    : "Be specific about what you want to write about"}
+</p>
+
                   </div>
 
                   {/* Generate Button */}
@@ -342,7 +383,10 @@ export function ContentGeneratorClient() {
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.8, delay: 0.2 }}
             >
-              <Card className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-0 shadow-xl rounded-3xl" ref={targetRef}>
+              <Card
+                className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-0 shadow-xl rounded-3xl"
+                ref={targetRef}
+              >
                 <CardHeader>
                   <div className="flex items-center gap-2 flex-wrap justify-between">
                     <CardTitle className="flex items-center space-x-2">
@@ -365,7 +409,7 @@ export function ContentGeneratorClient() {
                       <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-6 max-h-96 overflow-y-auto">
                         <pre className="whitespace-pre-wrap text-sm  text-blue-800 dark:text-blue-200 font-sans leading-relaxed">
                           {/* {generatedContent} */}
-                          <AIContentDisplay content={generatedContent}/>
+                          <AIContentDisplay content={generatedContent} />
                         </pre>
                       </div>
                       <div className="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400">
@@ -383,8 +427,8 @@ export function ContentGeneratorClient() {
                         Your AI-generated content will appear here
                       </p>
                       <p className="text-sm text-gray-400">
-                        Fill in the options above and click &quot;Generate Content&quot;
-                        to get started
+                        Fill in the options above and click &quot;Generate
+                        Content&quot; to get started
                       </p>
                     </div>
                   )}
@@ -414,7 +458,7 @@ export function ContentGeneratorClient() {
                       1. Choose Type
                     </h4>
                     <p className="text-sm text-gray-600 dark:text-gray-300">
-                      Select between essay or letter format
+                      Select between essay, letter  or term-paper format
                     </p>
                   </div>
                   <div className="text-center">
