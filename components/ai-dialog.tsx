@@ -1,9 +1,7 @@
-import { FC, useState, useEffect, useRef } from "react";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Separator } from "@/components/ui/separator";
+import { FC, useEffect, useRef } from "react";
+import { ScrollArea } from "@/components/ui/scroll-area"
 import { Textarea } from "@/components/ui/textarea";
 import {
-  Upload,
   Sparkles,
   Loader2,
   Send,
@@ -185,9 +183,9 @@ export const AIDialog: FC<{ text: string }> = ({ text }) => {
                 <Sparkles className="h-8 w-8 mx-auto mb-2 opacity-50" />
                 <p className="text-sm">Ask questions about your document!</p>
                 <div className="mt-4 space-y-1 text-xs text-slate-400">
-                  <p>• "What are the main points?"</p>
-                  <p>• "Can you explain section 2?"</p>
-                  <p>• "What conclusions are drawn?"</p>
+                  <p>• &quot;What are the main points?&quot;</p>
+                  <p>• &quot;Can you explain section 2?&quot;</p>
+                  <p>• &quot;What conclusions are drawn?&quot;</p>
                 </div>
               </div>
             ) : (
