@@ -1,4 +1,4 @@
-import AIGenerateContentUsage from "@/models/ai-fix-grammar-usage-schema";
+import AIGenerateContentUsage from "@/models/ai-generate-content-usage-schema";
 import {Types} from "mongoose";
 
 export const countAiGenerateContentDailyUsage = (userId: Types.ObjectId) => {

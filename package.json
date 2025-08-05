@@ -9,7 +9,10 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@ai-sdk/react": "^1.2.12",
+    "@ai-sdk/google": "^2.0.0",
     "@emotion/is-prop-valid": "latest",
+    "@google-cloud/text-to-speech": "^6.2.0",
     "@google/genai": "^1.4.0",
     "@google/generative-ai": "^0.24.1",
     "@hookform/resolvers": "latest",
@@ -41,6 +44,7 @@
     "@radix-ui/react-toggle-group": "1.1.1",
     "@radix-ui/react-tooltip": "1.1.6",
     "@vercel/analytics": "^1.5.0",
+    "ai": "^5.0.0",
     "autoprefixer": "^10.4.20",
     "axios": "^1.9.0",
     "bcryptjs": "^3.0.2",
@@ -79,7 +83,7 @@
     "tailwindcss-animate": "^1.0.7",
     "uuid": "^11.1.0",
     "vaul": "^0.9.6",
-    "zod": "latest"
+    "zod": "^3.25.76"
   },
   "devDependencies": {
     "@tailwindcss/typography": "^0.5.16",

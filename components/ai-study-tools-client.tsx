@@ -25,6 +25,7 @@ import { summarizeText } from "@/actions/summarize-text";
 import extractTextFromPDF from "react-pdftotext";
 import {validateFileSize} from "@/lib/main";
 import { CopyExport } from "./copy-exports";
+import {AIDialog} from "@/components/ai-dialog";
 
 
 export function AIStudyToolsClient() {
@@ -266,6 +267,9 @@ export function AIStudyToolsClient() {
 
                 {/* Settings Row */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* <div className="fixed bottom-8 right-4"> */}
+                    
+                  {/* </div> */}
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
                       Summary Length:
@@ -320,11 +324,12 @@ export function AIStudyToolsClient() {
           </motion.div>
           <Card className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-0 shadow-xl rounded-3xl" ref={targetRef}>
             <CardHeader>
-              <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 justify-between">
                 <CardTitle className="flex items-center space-x-2">
                   <BookOpen className="h-6 w-6 text-blue-600" />
                   <span>AI Summary</span>
                 </CardTitle>
+                <AIDialog text={inputText} />
                 {/* {!summary && (
                         <Button
                           onClick={handleGenerateSummary}

@@ -8,6 +8,7 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 import { errorResponse } from "@/lib/main";
 import { ERROR_MESSAGES } from "@/lib/error-messages";
 import getOrCreateGuestId from "@/hooks/get-or-create-guest-id";
+import {createNewTermPaper} from "@/data/term-paper";
 
 type ContentType = "essay" | "letter" | "term-paper";
 type Tone = "formal" | "academic" | "casual" | "friendly";
@@ -195,7 +196,7 @@ Don’t wrap content in code blocks unless it’s actual code.
 ${contentType === "letter"
                 ? "Include appropriate letter formatting (greeting, body, closing)."
                 : ""}
-                ${contentType === "term paper" ? `
+                ${contentType === "term-paper" ? `
                     Formatting Requirements for Term Paper:
                     - Include a title page (title, name, date, institution)
                     - Include a table of contents before the introduction
@@ -221,8 +222,22 @@ Topic: ${topic}
         if (!generatedText) {
             return generateContentError("Failed to generate content");
         }
+        const data = {
+            userId,
+            topic,
+            content: generatedText,
+            type: contentType.toLowerCase() as ContentType,
+            tone: tone.toLowerCase() as Tone,
+            length: length.toLowerCase() as Length,
+            wordCount: generatedText.split(" ").length
+        }
 
-        await createAiGenerateContentUsage(userId);
+        const promises = [
+            createAiGenerateContentUsage(userId),
+            session ? createNewTermPaper(data) : null,
+          ].filter(Boolean);
+
+        await Promise.all(promises);
         return { content: generatedText, error: null };
 
     } catch (err) {

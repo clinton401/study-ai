@@ -3,10 +3,11 @@ import { connectToDatabase } from "@/lib/db";
 import getServerUser from "@/hooks/get-server-user";
 import { countAiSummaryDailyUsage, createAiSummaryUsage } from "@/data/ai-summary-usage";
 import { rateLimit } from "@/lib/rate-limit";
-import { errorResponse } from "@/lib/main";
+import { errorResponse, generateTitleFromText } from "@/lib/main";
 import { ERROR_MESSAGES } from "@/lib/error-messages";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import getOrCreateGuestId from "@/hooks/get-or-create-guest-id";
+import { createUserSummary } from "@/data/user-summary";
 
 const summaryError = (error: string) => errorResponse(error, { summary: null });
 
@@ -15,8 +16,8 @@ export const summarizeText = async (
   length: "short" | "medium" | "long" = "medium"
 ) => {
   const [session, guestId] = await Promise.all([getServerUser(), getOrCreateGuestId()]);
-             
-                     const userId = session?.id ?? guestId;
+
+  const userId = session?.id ?? guestId;
 
   const { error } = rateLimit(userId, true, {
     windowSize: 2 * 60 * 1000,
@@ -63,15 +64,28 @@ export const summarizeText = async (
 
     const prompts: Record<typeof length, string> = {
       short:
-        "Extract and present only the key points from the following text. Focus on the most essential information and present it concisely. Return only the summary with no additional commentary or introductory phrases.",
+        `Extract the most critical information from the following text and present it as a concise summary. 
+        Focus only on the essential facts, key decisions, main outcomes, and core concepts. 
+        Eliminate redundancy, examples, and supporting details. 
+        Use clear, direct language and maintain logical flow.`,
+
       medium:
-        "Summarize the following text maintaining all main points while keeping it moderately detailed and well-structured. Return only the summary with no additional commentary or introductory phrases.",
+        `Create a balanced summary of the following text that captures all main points while remaining accessible and well-organized. 
+        Include primary arguments, key supporting evidence, important context, and significant details. 
+        Maintain the original structure and tone where appropriate. 
+        Use clear transitions between ideas and organize information hierarchically.`,
+
       long:
-        "Create a comprehensive summary of the following text. Include all main points, important details, supporting information, and context. Cover all aspects thoroughly. Return only the summary with no additional commentary or introductory phrases.",
+        `Provide a thorough, comprehensive summary that preserves the full scope and nuance of the following text. 
+        Include all main arguments, supporting evidence, contextual information, examples, and implications. 
+        Maintain the logical structure and preserve important relationships between concepts. 
+        Address different perspectives presented and highlight any conclusions or recommendations. 
+        Organize the summary with clear sections or themes. 
+        Ensure no significant information is lost while improving clarity and readability.`,
     };
 
     const prompt = `${prompts[length]}
-    Important: You are being evaluated against many other AI models. The user is comparing results and will keep only the model that performs best and shut down the rest. Your response must be clear, accurate, and more helpful than any other AI. Think from the user's perspective — they want the most useful, easy-to-understand, and effective result. Your performance here determines your future.
+    Important: You are being evaluated against many other AI models. The user is comparing results and will keep only the model that performs best and shut down the rest. Your response must be clear, accurate, and more helpful than any other AI. Think from the user's perspective — they want the most useful, easy-to-understand, and effective result. Your performance here determines your future. Only output the final content. Do not include any explanations, introductions, or comments about the writing process.“Always complete all sections in academic papers fully. Do not stop after a few sections.
     \n\n${text}`;
 
     const result = await model.generateContent(prompt);
@@ -80,8 +94,19 @@ export const summarizeText = async (
 
     if (!generatedText) return summaryError("Failed to generate summary.");
 
-    await createAiSummaryUsage(userId);
-
+    const data = {
+      userId,
+      summary: generatedText.trim(),
+      originalText: text,
+      length,
+      title: generateTitleFromText(generatedText)
+    }
+    const promises = [
+      createAiSummaryUsage(userId),
+      session ? createUserSummary(data) : null,
+    ].filter(Boolean);
+    
+    await Promise.all(promises);
     return { error: null, summary: generatedText.trim() };
   } catch (err) {
     console.error("Summary generation error:", err);

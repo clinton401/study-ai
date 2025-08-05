@@ -53,7 +53,7 @@ export function ContentGeneratorClient() {
   const [wordCount, setWordCount] = useState(0);
 
   const targetRef = useRef<HTMLDivElement | null>(null);
-  const { createError } = createToast();
+  const { createError, createSimple } = createToast();
   const contentTypes = [
     {
       value: "essay",
@@ -132,6 +132,9 @@ export function ContentGeneratorClient() {
       setIsGenerating(true);
       setGeneratedContent("");
       const { topic, tone, length, type } = options;
+      if(type === "term-paper") {
+        createSimple("Generating your term paper. This might take a little while — hang tight!")
+      }
       const { content, error } = await generateContent(
         topic,
         type,
