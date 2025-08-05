@@ -68,7 +68,7 @@ useEffect(() => {
       transition={{ duration: 0.5 }}
       className={`fixed top-0 left-0 right-0 w-full z-50 transition-all duration-300 ${
         isScrolled
-          ? "bg-white/80 dark:bg-gray-900/80 backdrop-blur-md shadow-lg"
+          ? "bg-background backdrop-blur-md shadow-lg"
           : "bg-transparent"
       }`}
     >
@@ -79,7 +79,7 @@ useEffect(() => {
             <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-2 rounded-xl">
               <GraduationCap className="h-6 w-6 text-white" />
             </div>
-            <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+            <span className="text-xl font-bold">
               StudyAI
             </span>
           </Link>
@@ -90,9 +90,9 @@ useEffect(() => {
               <Link
                 key={item.name}
                 href={item.href}
-                className={` hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200 ${
+                className={` transition-colors hover:text-primary/60 duration-200 ${
                   pathname === item.href
-                    ? "text-blue-500 "
+                    ? "text-primary "
                     : "text-gray-700 dark:text-gray-300"
                 }`}
               >
@@ -110,13 +110,13 @@ useEffect(() => {
                   <Link href="/login">
                     <Button
                       variant="ghost"
-                      className="text-gray-700 dark:text-gray-300"
+                      className=""
                     >
                       Login
                     </Button>
                   </Link>
                   <Link href="/register">
-                    <Button className="bg-blue-600 hover:bg-blue-700 text-white rounded-full">
+                    <Button className="  rounded-full">
                       Register
                     </Button>
                   </Link>
@@ -172,7 +172,7 @@ useEffect(() => {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
-            className="lg:hidden bg-white dark:bg-gray-900 overflow-hidden border-t border-gray-200 dark:border-gray-700"
+            className="lg:hidden bg-background overflow-hidden border-t border-gray-200 dark:border-gray-700"
             onClick={() => setIsMenuOpen(false)}
           >
             <div className="px-4 py-4 space-y-4">
@@ -182,9 +182,9 @@ useEffect(() => {
                   href={item.href}
                   className={`block ${
                     pathname === item.href
-                      ? "text-blue-500 "
+                      ? "text-primary "
                       : "text-gray-700 dark:text-gray-300"
-                  } hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200`}
+                  } hover:text-primary/60 transition-colors duration-200`}
                   onClick={() => setIsMenuOpen(false)}
                 >
                   {item.name}
@@ -199,7 +199,7 @@ useEffect(() => {
                       </Button>
                     </Link>
                     <Link href="/register">
-                      <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white">
+                      <Button className="w-full  ">
                         Register
                       </Button>
                     </Link>
@@ -212,7 +212,7 @@ useEffect(() => {
                       </Button>
                     </Link>
                     <Button
-                      className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+                      className="w-full "
                       onClick={handleLogout}
                       disabled={isPending}
                     >

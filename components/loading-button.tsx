@@ -11,7 +11,7 @@ type LoadingButtonProps ={
 export const LoadingButton: FC<LoadingButtonProps> = ({isPending, message, variant="default", loadingText, disabled}) => {
   return (
     <Button type="submit" variant={variant} disabled={disabled} 
-    className="w-full h-12 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-xl text-lg font-medium"
+    className="w-full h-12  rounded-xl text-lg font-medium"
   >
             
             {isPending ? <>

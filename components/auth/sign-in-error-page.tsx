@@ -14,7 +14,7 @@ export  function SigninErrorPage() {
       transition={{ duration: 0.8 }}
       className="w-full max-w-md mx-auto mt-10"
     >
-      <Card className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-0 shadow-2xl rounded-3xl">
+      <Card className=" backdrop-blur-sm border-0 shadow-2xl rounded-3xl">
         <CardHeader className="text-center pb-8">
           <div className="flex justify-center mb-6">
             <div className="bg-red-500 p-3 rounded-2xl">

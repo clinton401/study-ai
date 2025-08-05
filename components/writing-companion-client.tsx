@@ -216,7 +216,7 @@ export function WritingCompanionClient() {
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.8 }}
               >
-                <Card className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-0 shadow-xl rounded-3xl">
+                <Card className=" backdrop-blur-sm border-0 shadow-xl rounded-3xl">
                   <CardHeader>
                     <CardTitle className="flex items-center space-x-2">
                       <PenTool className="h-6 w-6 text-green-600" />
@@ -236,7 +236,7 @@ export function WritingCompanionClient() {
                       <Button
                         onClick={handleFixGrammar}
                         disabled={!text.trim() || isProcessing || isRephrasing}
-                        className="bg-green-600 hover:bg-green-700 text-white rounded-xl"
+                        className=" rounded-xl"
                       >
                         <CheckCircle className="h-4 w-4 mr-2" />
                         {isProcessing ? "Checking..." : "Fix Grammar"}
@@ -351,7 +351,7 @@ export function WritingCompanionClient() {
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.8, delay: 0.2 }}
               >
-                <Card className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-0 shadow-xl rounded-3xl">
+                <Card className=" backdrop-blur-sm border-0 shadow-xl rounded-3xl">
                   <CardHeader>
                     <CardTitle className="text-lg">Writing Stats</CardTitle>
                   </CardHeader>
@@ -398,7 +398,7 @@ export function WritingCompanionClient() {
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.8, delay: 0.4 }}
               >
-                <Card className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-0 shadow-xl rounded-3xl" ref={targetRef}>
+                <Card className=" backdrop-blur-sm border-0 shadow-xl rounded-3xl" ref={targetRef}>
                   <CardHeader>
                     <CardTitle className="flex items-center space-x-2">
                       <Wand2 className="h-5 w-5 text-purple-600" />

@@ -1,7 +1,7 @@
 import type { Metadata } from "next"
 import { HeroSection } from "@/components/sections/hero-section"
 import { FeaturesSection } from "@/components/sections/features-section"
-import { TestimonialsSection } from "@/components/sections/testimonials-section"
+// import { TestimonialsSection } from "@/components/sections/testimonials-section"
 import { CTASection } from "@/components/sections/cta-section"
 
 export const metadata: Metadata = {
@@ -26,7 +26,7 @@ export default function HomePage() {
     <main>
         <HeroSection />
         <FeaturesSection />
-        <TestimonialsSection />
+        {/* <TestimonialsSection /> */}
         <CTASection />
       </main>
   )

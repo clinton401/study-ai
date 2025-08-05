@@ -103,7 +103,7 @@ export default async function RootLayout({
           <Analytics/>
           <Toaster/>
           <Navigation session={session}/>
-          <div className="min-h-dvh w-full overflow-x-hidden bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800  md:pt-[100px] pt-[80px] pb-[50px] dark:to-purple-900 flex flex-col items-center justify-center px-4">
+          <div className="min-h-dvh w-full overflow-x-hidden   md:pt-[100px] pt-[80px] pb-[50px]  flex flex-col items-center justify-center px-4">
             {children}
           </div>
           <Footer />

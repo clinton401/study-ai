@@ -25,7 +25,7 @@ export function HeroSection() {
           transition={{ duration: 0.8 }}
           className="text-center"
         >
-          <h1 className="text-5xl md:text-7xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-6">
+          <h1 className="text-5xl md:text-7xl font-bold  mb-6">
             Study Smarter with AI
           </h1>
           <p className="text-xl md:text-2xl text-gray-600 dark:text-gray-300 mb-8 max-w-3xl mx-auto">
@@ -37,7 +37,7 @@ export function HeroSection() {
             <Link href="/content-generator">
               <Button
                 size="lg"
-                className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 text-lg rounded-full"
+                className=" text-white px-8 py-4 text-lg rounded-full"
               >
                 Explore Now
                 <ArrowRight className="ml-2 h-5 w-5" />
@@ -57,7 +57,7 @@ export function HeroSection() {
             transition={{ duration: 1, delay: 0.3 }}
             className="relative"
           >
-            <div className="bg-gradient-to-r from-blue-100 to-purple-100 dark:from-blue-900/20 dark:to-purple-900/20 rounded-3xl p-8 max-w-4xl mx-auto">
+            <div className=" rounded-3xl p-8 max-w-4xl mx-auto">
               <div className="grid grid-cols-1 *:cursor-pointer md:grid-cols-3 gap-6">
                 <motion.div
                   whileHover={{ scale: 1.05 }}

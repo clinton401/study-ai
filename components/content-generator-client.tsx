@@ -200,7 +200,7 @@ export function ContentGeneratorClient() {
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.8 }}
             >
-              <Card className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-0 shadow-xl rounded-3xl">
+              <Card className="backdrop-blur-sm border-0 shadow-xl rounded-3xl">
                 <CardHeader>
                   <CardTitle className="flex items-center space-x-2">
                     <Wand2 className="h-6 w-6 text-green-600" />
@@ -356,7 +356,7 @@ export function ContentGeneratorClient() {
                   <Button
                     onClick={handleGenerate}
                     disabled={!isFormValid || isGenerating}
-                    className="w-full h-12 bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white rounded-xl text-lg font-medium"
+                    className="w-full h-12   rounded-xl text-lg font-medium"
                   >
                     {isGenerating ? (
                       <>
@@ -387,7 +387,7 @@ export function ContentGeneratorClient() {
               transition={{ duration: 0.8, delay: 0.2 }}
             >
               <Card
-                className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-0 shadow-xl rounded-3xl"
+                className=" backdrop-blur-sm border-0 shadow-xl rounded-3xl"
                 ref={targetRef}
               >
                 <CardHeader>
@@ -409,8 +409,8 @@ export function ContentGeneratorClient() {
                 <CardContent>
                   {generatedContent ? (
                     <div className="space-y-4">
-                      <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-6 max-h-96 overflow-y-auto">
-                        <pre className="whitespace-pre-wrap text-sm  text-blue-800 dark:text-blue-200 font-sans leading-relaxed">
+                      <div className="bg-background rounded-xl p-6 max-h-96 overflow-y-auto">
+                        <pre className="whitespace-pre-wrap text-sm  text-foreground font-sans leading-relaxed">
                           {/* {generatedContent} */}
                           <AIContentDisplay content={generatedContent} />
                         </pre>
@@ -447,7 +447,7 @@ export function ContentGeneratorClient() {
             transition={{ duration: 0.8, delay: 0.6 }}
             className="mt-16"
           >
-            <Card className="bg-gradient-to-r from-green-50 to-blue-50 dark:from-gray-800 dark:to-blue-900/20 border-0 rounded-3xl">
+            <Card className="border-0 rounded-3xl">
               <CardContent className="p-8">
                 <h3 className="text-2xl font-bold text-center text-gray-800 dark:text-gray-200 mb-8">
                   How Content Generation Works

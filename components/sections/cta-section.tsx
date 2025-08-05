@@ -24,7 +24,7 @@ export function CTASection() {
           <Link href="/register">
             <Button
               size="lg"
-              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-12 py-6 text-xl rounded-full"
+              className=" px-12 py-6 text-xl rounded-full"
             >
               Sign Up for Free
               <Zap className="ml-2 h-6 w-6" />

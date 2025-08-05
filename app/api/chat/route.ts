@@ -1,5 +1,5 @@
 import { google } from "@ai-sdk/google";
-import { streamText, convertToModelMessages, UIMessage } from "ai";
+import { streamText, convertToModelMessages } from "ai";
 import { type NextRequest } from "next/server";
 import getServerUser from "@/hooks/get-server-user";
 import { rateLimit } from "@/lib/rate-limit";
@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
             );
         }
 
-        const { messages, context }: { messages: UIMessage[], context: string } = await req.json();
+        const { messages, context } = await req.json();
 
         if (!messages || messages.length === 0) {
             return Response.json(
@@ -45,6 +45,23 @@ export async function POST(req: NextRequest) {
                 { status: 400 }
             );
         }
+        const MAX_MESSAGES = 40;
+const MAX_CHARS_PER_MESSAGE = 1000;
+
+const latestMessage = messages[messages.length - 1]?.content ?? "";
+
+    if (latestMessage.length > MAX_CHARS_PER_MESSAGE) {
+      return Response.json(
+        { error: "Message too long. Try shortening it to 1000 characters or less." },
+        { status: 400 }
+      );
+    }
+if (messages.length > MAX_MESSAGES) {
+  return Response.json({
+    error: "You’ve reached the chat limit. Please refresh to start a new conversation."
+  }, { status: 400 });
+}
+
 
         const maxContextLength = 750000; 
         const truncatedContext = context.length > maxContextLength

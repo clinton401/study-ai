@@ -58,14 +58,14 @@ export function RegisterForm() {
       transition={{ duration: 0.8 }}
       className="w-full max-w-md"
     >
-      <Card className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-0 shadow-2xl rounded-3xl">
+      <Card className=" backdrop-blur-sm border-0 shadow-2xl rounded-3xl">
         <CardHeader className="text-center pb-8">
           <div className="flex justify-center mb-6">
             <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-3 rounded-2xl">
               <GraduationCap className="h-8 w-8 text-white" />
             </div>
           </div>
-          <CardTitle className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+          <CardTitle className="text-3xl font-bold ">
             Join StudyAI
           </CardTitle>
           <p className="text-gray-600 dark:text-gray-300 mt-2">Create your account and start studying smarter</p>

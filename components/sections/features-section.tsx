@@ -62,7 +62,7 @@ export function FeaturesSection() {
               whileHover={{ y: -10 }}
             >
               <Link href={feature.href}>
-                <Card className="h-full bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-0 shadow-xl rounded-3xl hover:shadow-2xl transition-all duration-300 cursor-pointer group">
+                <Card className="h-full bg-white dark:bg-gray-800 backdrop-blur-sm border-0 shadow-xl rounded-3xl hover:shadow-2xl transition-all duration-300 cursor-pointer group">
                   <CardContent className="p-8 text-center">
                     <div className="bg-gradient-to-r from-blue-100 to-purple-100 dark:from-blue-900/20 dark:to-purple-900/20 rounded-2xl p-4 w-fit mx-auto mb-6">
                       <feature.icon className="h-12 w-12 text-blue-600" />
@@ -73,7 +73,7 @@ export function FeaturesSection() {
                     <p className="text-gray-600 dark:text-gray-300 leading-relaxed mb-6">
                       {feature.description}
                     </p>
-                    <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-full group-hover:scale-105 transition-transform duration-300">
+                    <Button className="bg-primary text-white rounded-full group-hover:scale-105 transition-transform duration-300">
                       Try Now
                       <ArrowRight className="ml-2 h-4 w-4" />
                     </Button>

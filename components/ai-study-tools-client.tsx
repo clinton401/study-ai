@@ -190,8 +190,8 @@ export function AIStudyToolsClient() {
               AI Study Tools
             </h1>
             <p className="text-xl md:text-2xl text-gray-600 dark:text-gray-300 mb-8 max-w-3xl mx-auto">
-              Summarize your notes and auto-generate quiz questions with one
-              upload
+              Summarize your notes and ask AI questions based on the content —
+              all from a single upload.
             </p>
           </motion.div>
         </div>
@@ -207,7 +207,7 @@ export function AIStudyToolsClient() {
             transition={{ duration: 0.8, delay: 0.2 }}
             className="mb-8"
           >
-            <Card className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-0 shadow-xl rounded-3xl">
+            <Card className="  backdrop-blur-sm  shadow-xl rounded-3xl">
               <CardHeader>
                 <CardTitle className="flex items-center space-x-2">
                   <Upload className="h-6 w-6 text-blue-600" />
@@ -230,7 +230,7 @@ export function AIStudyToolsClient() {
                     id="file-upload"
                     ref={inputRef}
                   />
-                  <label  className="cursor-pointer">
+                  <label className="cursor-pointer">
                     <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                     <p className="text-gray-600 dark:text-gray-300 mb-2">
                       {uploadedFile ? (
@@ -268,7 +268,7 @@ export function AIStudyToolsClient() {
                 {/* Settings Row */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {/* <div className="fixed bottom-8 right-4"> */}
-                    
+
                   {/* </div> */}
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -303,7 +303,7 @@ export function AIStudyToolsClient() {
                       disabled={
                         !inputText.trim() || isProcessing || isExtractPending
                       }
-                      className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-xl h-10"
+                      className="w-full   rounded-xl h-10"
                     >
                       {isProcessing ? (
                         <>
@@ -322,7 +322,10 @@ export function AIStudyToolsClient() {
               </CardContent>
             </Card>
           </motion.div>
-          <Card className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-0 shadow-xl rounded-3xl" ref={targetRef}>
+          <Card
+            className=" backdrop-blur-sm border-0 shadow-xl rounded-3xl"
+            ref={targetRef}
+          >
             <CardHeader>
               <div className="flex items-center gap-2 justify-between">
                 <CardTitle className="flex items-center space-x-2">
@@ -362,7 +365,7 @@ export function AIStudyToolsClient() {
                   >
                     <div className="flex items-center flex-wrap gap-2 justify-between">
                       <div className="flex space-2 flex-wrap ">
-                       <CopyExport content={summary} filename="summary" />
+                        <CopyExport content={summary} filename="summary" />
                       </div>
                       <Button
                         onClick={() => setSummary("")}
@@ -374,12 +377,11 @@ export function AIStudyToolsClient() {
                         Generate New
                       </Button>
                     </div>
-                    <div className="bg-blue-50 dark:bg-blue-900/20 w-full  border border-blue-200 dark:border-blue-800 rounded-xl p-6">
+                    <div className=" w-full  border border-blue-200 dark:border-blue-800 rounded-xl p-6">
                       <pre className="whitespace-pre-wrap text-sm text-blue-800 dark:text-blue-200 font-sans leading-relaxed">
                         {summary}
                       </pre>
                     </div>
-                    
                   </motion.div>
                 ) : (
                   <motion.div
@@ -392,7 +394,8 @@ export function AIStudyToolsClient() {
                       Your AI-generated summary will appear here
                     </p>
                     <p className="text-sm text-gray-400">
-                      Upload content and click &quot;Generate&quot; to get started
+                      Upload content and click &quot;Generate&quot; to get
+                      started
                     </p>
                   </motion.div>
                 )}
@@ -406,7 +409,7 @@ export function AIStudyToolsClient() {
             transition={{ duration: 0.8, delay: 0.6 }}
             className="mt-16"
           >
-            <Card className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-gray-800 dark:to-purple-900/20 border-0 rounded-3xl">
+            <Card className=" border-0 rounded-3xl">
               <CardContent className="p-8">
                 <h3 className="text-2xl font-bold text-center text-gray-800 dark:text-gray-200 mb-8">
                   How It Works

@@ -20,6 +20,7 @@ import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useChat } from "@ai-sdk/react";
 import handleTextAreaHeight from "@/hooks/handle-text-area-height";
+import useCreateToast from "@/hooks/create-toast"
 
 const TypingIndicator = () => {
   return (
@@ -84,7 +85,7 @@ export const AIDialog: FC<{ text: string }> = ({ text }) => {
 
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-
+const {createError} = useCreateToast();
   const isLoading = status === "submitted" || status === "streaming";
   const hasError = status === "error" || !!error;
   const { textareaRef, handleInput } = handleTextAreaHeight();
@@ -128,6 +129,8 @@ export const AIDialog: FC<{ text: string }> = ({ text }) => {
 
   const handleCustomSubmit = (e: React.FormEvent) => {
     if (isLoading || text.trim().length < 100 || !input.trim()) return;
+    if(input.length > 1000) return createError("Message too long. Try shortening it to 1000 characters or less.");
+    if (messages.length > 40) return createError("You’ve reached the chat limit. Please refresh to start a new conversation.")
     handleSubmit(e);
     if (textareaRef && textareaRef.current) {
       textareaRef.current.style.height = "40px";
