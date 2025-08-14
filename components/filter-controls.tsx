@@ -20,7 +20,7 @@ export function FilterControls({title, sort, setSort, type, setType}: {title: st
         {/* <Search className="h-4 w-4 text-muted-foreground" />
         <Input placeholder="Search content..." className="max-w-sm" /> */}
       </div>
-      <div className="flex items-center space-x-2">
+      <div className="flex items-center flex-wrap gap-2">
         <Label htmlFor="sort-by" className="text-sm font-medium">
           Sort by:
         </Label>

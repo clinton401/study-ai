@@ -217,7 +217,7 @@ export function AIStudyToolsClient() {
               <CardContent className="space-y-6">
                 {/* File Upload */}
                 <div
-                  className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl p-8 text-center hover:border-blue-500 transition-colors cursor-pointer"
+                  className="border-2 border-dashed overflow-hidden border-gray-300 dark:border-gray-600 rounded-xl p-8 text-center hover:border-blue-500 transition-colors cursor-pointer"
                   onDragOver={handleDragOver}
                   onDrop={handleDrop}
                   onClick={() => inputRef.current?.click()}
@@ -234,7 +234,7 @@ export function AIStudyToolsClient() {
                     <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                     <p className="text-gray-600 dark:text-gray-300 mb-2">
                       {uploadedFile ? (
-                        <span className="text-green-600 font-medium">
+                        <span className="text-green-600 w-full  line-break font-medium">
                           ✓ {uploadedFile.name}
                         </span>
                       ) : (
@@ -245,7 +245,7 @@ export function AIStudyToolsClient() {
                       PDF, DOCX, TXT (Max 10MB)
                     </p>
                     {isExtractPending && (
-                      <p className="text-sm text-gray-500">
+                      <p className="text-sm text-primary">
                         Extracting text...
                       </p>
                     )}

@@ -1,4 +1,5 @@
-import {  QueryFunctionContext } from "@tanstack/react-query";
+"use client"
+import { QueryFunctionContext } from "@tanstack/react-query";
 import {
   Card,
   CardContent,
