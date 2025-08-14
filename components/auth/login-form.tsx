@@ -28,7 +28,7 @@ import { Social } from "./social";
 export function LoginForm({loginPage = true}: {loginPage?: boolean}) {
   const [isLoading, setIsLoading] = useState(false);
   const { createError, createSimple } = createToast();
-  const { push, refresh } = useRouter();
+  const { push } = useRouter();
 
   const form = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
@@ -51,7 +51,7 @@ export function LoginForm({loginPage = true}: {loginPage?: boolean}) {
       if(loginPage){
       push(redirect || DEFAULT_LOGIN_REDIRECT);
       }else{
-        refresh();
+        window.location.reload();
       }
     } catch (error) {
       console.error("Login error:", error);

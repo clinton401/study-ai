@@ -4,7 +4,7 @@ import { FeaturesDetailSection } from "@/components/features/features-detail-sec
 import { FeaturesCTASection } from "@/components/features/features-cta-section"
 
 export const metadata: Metadata = {
-  title: "Features - StudyAI",
+  title: "Features",
   description:
     "Discover powerful AI-powered learning tools: Note Summarizer, Quiz Generator, and Writing Companion. Transform your study experience with advanced AI technology.",
   keywords: [
@@ -16,7 +16,7 @@ export const metadata: Metadata = {
     "AI learning platform",
   ],
   openGraph: {
-    title: "Features - StudyAI",
+    title: "Features",
     description: "Discover powerful AI-powered learning tools: Note Summarizer, Quiz Generator, and Writing Companion.",
     url: "https://studyaii.vercel.app/features",
     // images: ["/og-image.jpg"],

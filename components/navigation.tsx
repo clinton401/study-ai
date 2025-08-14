@@ -44,7 +44,7 @@ useEffect(() => {
     { name: "Features", href: "/features" },
     { name: "Content Generator", href: "/content-generator" },
     { name: "Writing Companion", href: "/writing-companion" },
-    { name: "AI Study Tools", href: "/ai-study-tools" },
+    { name: "Summary", href: "/ai-study-tools" },
   ]
   const handleLogout = async () => {
     if (isPending) return;
@@ -60,15 +60,16 @@ useEffect(() => {
       setIsPending(false)
     }
   };
+  if (pathname === "/dashboard") return;
 
   return (
     <motion.nav
       initial={{ y: -100 }}
       animate={{ y: 0 }}
       transition={{ duration: 0.5 }}
-      className={`fixed top-0 left-0 right-0 w-full z-50 transition-all duration-300 ${
+      className={`fixedd top-0 left-0 right-0 w-full z-50 transition-all mb-4 duration-300 ${
         isScrolled
-          ? "bg-background backdrop-blur-md shadow-lg"
+          ? " backdrop-blur-sm shadow-lg"
           : "bg-transparent"
       }`}
     >
@@ -128,7 +129,7 @@ useEffect(() => {
                       variant="outline"
                       className="rounded-full max-w-[150px] truncate"
                     >
-                      Clinton <ChevronDown />{" "}
+                      {session.name} <ChevronDown />{" "}
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent className="w-56" align="start">

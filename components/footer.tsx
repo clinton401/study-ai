@@ -1,8 +1,13 @@
+"use client"
 import { GraduationCap, Twitter, Github, Linkedin } from "lucide-react"
 import Link from "next/link";
+// import {usePathname} from "next/navigation"
 
 
 export default function Footer() {
+  // const pathname = usePathname();
+  
+  // if (pathname === "/dashboard") return;
   const year = new Date().getFullYear()
   return (
     <footer className=" border-t  py-8">

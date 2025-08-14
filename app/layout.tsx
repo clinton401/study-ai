@@ -1,15 +1,16 @@
-import type React from "react"
-import type { Metadata } from "next"
-import { Inter } from "next/font/google"
-import "./globals.css"
+import type React from "react";
+import type { Metadata } from "next";
+import { Inter } from "next/font/google";
+import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
-import Navigation from "@/components/navigation";
-import Footer from "@/components/footer"
+import Footer from "@/components/footer";
 import { Toaster } from "@/components/ui/toaster";
 import getServerUser from "@/hooks/get-server-user";
-import { Analytics } from "@vercel/analytics/next"
+import { Analytics } from "@vercel/analytics/next";
+import { ParentComp } from "@/components/parent-comp";
+import {TanstackQueryClient} from "@/components/tanstack-query-client";
 
-const inter = Inter({ subsets: ["latin"] })
+const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: {
@@ -77,13 +78,12 @@ export const metadata: Metadata = {
   verification: {
     google: "your-google-verification-code",
   },
-   
-}
+};
 
 export default async function RootLayout({
   children,
 }: {
-  children: React.ReactNode
+  children: React.ReactNode;
 }) {
   const session = await getServerUser();
   return (
@@ -94,20 +94,25 @@ export default async function RootLayout({
         <link rel="manifest" href="/manifest.json" />
       </head>
       <body className={inter.className}>
+      <TanstackQueryClient>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
           enableSystem
           disableTransitionOnChange
         >
-          <Analytics/>
-          <Toaster/>
-          <Navigation session={session}/>
-          <div className="min-h-dvh w-full overflow-x-hidden   md:pt-[100px] pt-[80px] pb-[50px]  flex flex-col items-center justify-center px-4">
-            {children}
-          </div>
-          <Footer />
+          <Analytics />
+          <Toaster />
+          <ParentComp session={session}>
+            {/* <Navigation session={session} /> */}
+            <div className=" w-full overflow-x-hidden  pb-8  flex flex-col items-center justify-center ">
+              {children}
+            </div>
+            <Footer />
+          </ParentComp>
         </ThemeProvider>
+        
+        </TanstackQueryClient>
       </body>
     </html>
   );

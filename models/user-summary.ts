@@ -3,10 +3,13 @@ import { Types, Schema, model, models } from "mongoose";
 export interface IUserSummary {
   userId: Types.ObjectId;
   summary: string;
-  originalText?: string;
+  originalText: string;
   length: "short" | "medium" | "long";
   title?: string;
   createdAt: Date;
+}
+export type FullUserSummary = IUserSummary & {
+  _id: Types.ObjectId
 }
 
 const UserSummarySchema = new Schema<IUserSummary>(
@@ -22,6 +25,7 @@ const UserSummarySchema = new Schema<IUserSummary>(
     },
     originalText: {
       type: String,
+      required: true,
     },
     length: {
       type: String,

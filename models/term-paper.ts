@@ -7,7 +7,7 @@ type Length = "short" | "medium" | "long";
 export interface ITermPaper {
   userId: Types.ObjectId;
   topic: string;
-  content: string;
+  content: string; 
   wordCount?: number;
   type: ContentType;
   tone: Tone;
@@ -15,6 +15,9 @@ export interface ITermPaper {
   createdAt: Date;
 }
 
+export type FullTermPaper = ITermPaper & {
+  _id: Types.ObjectId
+}
 const TermPaperSchema = new Schema<ITermPaper>(
   {
     userId: {

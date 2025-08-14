@@ -3,7 +3,7 @@ import { SettingsClient } from "@/components/settings-client";
 import getServerUser from "@/hooks/get-server-user";
 
 export const metadata: Metadata = {
-  title: "Settings - StudyAI",
+  title: "Settings",
   description:
     "Manage your StudyAI account settings. Update your profile, change preferences, manage notifications, and more.",
   keywords: [
@@ -15,7 +15,7 @@ export const metadata: Metadata = {
     "privacy settings",
   ],
   openGraph: {
-    title: "Settings - StudyAI",
+    title: "Settings",
     description: "Manage your StudyAI account settings and preferences.",
     url: "https://studyaii.vercel.app/settings",
     // images: ["/og-settings.jpg"],

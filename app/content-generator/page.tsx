@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { ContentGeneratorClient } from "@/components/content-generator-client"
 
 export const metadata: Metadata = {
-  title: "AI Content Generator - StudyAI",
+  title: "AI Content Generator ",
   description:
     "Generate essays, letters, and written content with AI. Choose your type, tone, and length to create high-quality written content instantly.",
   keywords: [
@@ -14,7 +14,7 @@ export const metadata: Metadata = {
     "content creation",
   ],
   openGraph: {
-    title: "AI Content Generator - StudyAI",
+    title: "AI Content Generator ",
     description:
       "Generate essays, letters, and written content with AI. Customize tone, length, and style.",
     url: "https://studyaii.vercel.app/content-generator",

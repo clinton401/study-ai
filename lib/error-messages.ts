@@ -14,6 +14,8 @@ export const ERROR_MESSAGES = {
     PASSWORD_NOT_SET: "You do not have a password set for this account",
     INVALID_CREDENTIALS: 'Invalid credentials provided.',
     USER_NOT_VERIFIED: 'Your account has not been verified yet. Please verify your account to continue.',
+    CONTENT_NOT_FOUND: 'Content not found. It may have been deleted or does not exist.',
+    
 
 
 
