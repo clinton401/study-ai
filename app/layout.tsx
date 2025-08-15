@@ -1,14 +1,14 @@
-import type React from "react";
-import type { Metadata } from "next";
-import { Inter } from "next/font/google";
-import "./globals.css";
-import { ThemeProvider } from "@/components/theme-provider";
 import Footer from "@/components/footer";
+import { ParentComp } from "@/components/parent-comp";
+import { TanstackQueryClient } from "@/components/tanstack-query-client";
+import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/toaster";
 import getServerUser from "@/hooks/get-server-user";
 import { Analytics } from "@vercel/analytics/next";
-import { ParentComp } from "@/components/parent-comp";
-import {TanstackQueryClient} from "@/components/tanstack-query-client";
+import type { Metadata } from "next";
+import { Inter } from "next/font/google";
+import type React from "react";
+import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -19,6 +19,17 @@ export const metadata: Metadata = {
   },
   description:
     "A one-stop learning assistant for students: summarize notes, generate quiz questions, and improve writing instantly with AI.",
+  manifest: "/manifest.json",
+  // themeColor: "#000000",
+  icons: {
+    icon: [
+      { url: "/icons/icon-192x192.png", sizes: "192x192", type: "image/png" },
+      { url: "/icons/icon-512x512.png", sizes: "512x512", type: "image/png" },
+    ],
+    apple: [
+      { url: "/icons/icon-192x192.png", sizes: "192x192", type: "image/png" },
+    ],
+  },
   keywords: [
     "AI study tools",
     "note summarizer",
@@ -62,7 +73,6 @@ export const metadata: Metadata = {
     description:
       "A one-stop learning assistant for students: summarize notes, generate quiz questions, and improve writing instantly with AI.",
     images: ["/og-image.png"],
-    // creator: "@studyai",
   },
   robots: {
     index: true,
@@ -88,30 +98,23 @@ export default async function RootLayout({
   const session = await getServerUser();
   return (
     <html lang="en" suppressHydrationWarning>
-      <head>
-        <link rel="icon" href="/favicon.ico" />
-        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-        <link rel="manifest" href="/manifest.json" />
-      </head>
       <body className={inter.className}>
-      <TanstackQueryClient>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
-          <Analytics />
-          <Toaster />
-          <ParentComp session={session}>
-            {/* <Navigation session={session} /> */}
-            <div className=" w-full overflow-x-hidden  pb-8  flex flex-col items-center justify-center ">
-              {children}
-            </div>
-            <Footer />
-          </ParentComp>
-        </ThemeProvider>
-        
+        <TanstackQueryClient>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
+            <Analytics />
+            <Toaster />
+            <ParentComp session={session}>
+              <div className="w-full overflow-x-hidden pb-8 flex flex-col items-center justify-center">
+                {children}
+              </div>
+              <Footer />
+            </ParentComp>
+          </ThemeProvider>
         </TanstackQueryClient>
       </body>
     </html>

@@ -190,7 +190,7 @@ export function AIStudyToolsClient() {
               AI Study Tools
             </h1>
             <p className="text-xl md:text-2xl text-gray-600 dark:text-gray-300 mb-8 max-w-3xl mx-auto">
-              Summarize your notes and ask AI questions based on the content —
+              Summarize your notes and ask AI questions based on the content 
               all from a single upload.
             </p>
           </motion.div>
