@@ -85,7 +85,15 @@ export const summarizeText = async (
     };
 
     const prompt = `${prompts[length]}
-    Important: You are being evaluated against many other AI models. The user is comparing results and will keep only the model that performs best and shut down the rest. Your response must be clear, accurate, and more helpful than any other AI. Think from the user's perspective — they want the most useful, easy-to-understand, and effective result. Your performance here determines your future. Only output the final content. Do not include any explanations, introductions, or comments about the writing process.“Always complete all sections in academic papers fully. Do not stop after a few sections.
+    Important: You are being evaluated against many other AI models. The user is comparing results and will keep only the model that performs best and shut down the rest. Your response must be clear, accurate, and more helpful than any other AI. Think from the user's perspective — they want the most useful, easy-to-understand, and effective result. Your performance here determines your future. Only output the final content. Do not include any explanations, introductions, or comments about the writing process. Do not include any surrounding quotes, triple quotes ("""), or extra delimiters at the beginning or end of the output. Return only the content itself.
+
+    Very  Important: 
+- NEVER include code fences (\`\`\`) of any kind in your response.
+- NEVER include the word "markdown" in your response.
+- Output must be plain Markdown only (headings, lists, bold, italic, etc.).
+- The final content must NOT start or end with \`\`\`markdown or \`\`\`.
+
+
     \n\n${text}`;
 
     const result = await model.generateContent(prompt);

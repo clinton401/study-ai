@@ -13,7 +13,6 @@ export const maxDuration = 60;
 
 export async function POST(req: NextRequest) {
     try {
-        // Rate limiting check
         const [session, guestId] = await Promise.all([getServerUser(), getOrCreateGuestId()]);
         
           const userId = session?.id ?? guestId;
@@ -89,7 +88,6 @@ ${truncatedContext}`,
     } catch (err) {
         console.error("Chat error:", err);
 
-        // Handle specific API errors
         if (err instanceof Error) {
             if (err.message.includes('quota')) {
                 return Response.json({

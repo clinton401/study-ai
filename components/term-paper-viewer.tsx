@@ -15,6 +15,8 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { FullTermPaper as TermPaper } from "@/models/term-paper";
 import {CopyExport} from "./copy-exports";
 import {AIContentDisplay} from "@/components/ai-content-display";
+import {EditContentModal} from "@/components/edit-content-modal";
+import { useQueryClient } from "@tanstack/react-query";
 
 // interface TermPaper {
 //   id: number;
@@ -30,6 +32,9 @@ import {AIContentDisplay} from "@/components/ai-content-display";
 interface TermPaperViewerProps {
   paper: TermPaper;
   onClose: () => void;
+  sort?: string;
+  type?: string;
+  handleEditedContent?: (content: string) => void;
 }
 
 // const getFullContent = (paper: TermPaper) => {
@@ -104,8 +109,9 @@ interface TermPaperViewerProps {
 // World Bank. (2024). *Climate Change Action Plan 2021-2025*. Washington, DC: World Bank Publications.`;
 // };
 
-export function TermPaperViewer({ paper, onClose }: TermPaperViewerProps) {
+export function TermPaperViewer({ paper, onClose, sort= "", type= "", handleEditedContent }: TermPaperViewerProps) {
  
+  const queryClient = useQueryClient();
   const fullContent = paper.content;
 
 
@@ -125,6 +131,33 @@ export function TermPaperViewer({ paper, onClose }: TermPaperViewerProps) {
     }
   };
 
+  const invalidateQuery = async(content: string ) => {
+    await Promise.all([
+      queryClient.invalidateQueries(
+        {
+          queryKey: ["stats-content"],
+          exact: true,
+          refetchType: "active",
+        },
+        {
+          throwOnError: true,
+          cancelRefetch: true,
+        }
+      ),
+      queryClient.invalidateQueries(
+        {
+          queryKey: ["contents", sort, type],
+          exact: true,
+          refetchType: "active",
+        },
+        {
+          throwOnError: true,
+          cancelRefetch: true,
+        }
+      ),
+    ]);
+    handleEditedContent?.(content)
+  }
   const getLengthColor = (length: string) => {
     switch (length) {
       case "short":
@@ -168,10 +201,17 @@ export function TermPaperViewer({ paper, onClose }: TermPaperViewerProps) {
               </div>
             </div>
           </div>
-          
-                    
-          <div className="flex items-center gap-2">
-            <CopyExport content={paper.content} filename={paper.topic.slice(0, 20)} />
+
+          <div className="flex fle-wrap items-center gap-1">
+            <EditContentModal
+              content={paper.content}
+              invalidateQuery={invalidateQuery}
+              id={paper._id.toString()}
+            />
+            <CopyExport
+              content={paper.content}
+              filename={paper.topic.slice(0, 20)}
+            />
             {/* <Button variant="outline" size="sm" onClick={handleCopy}>
               <Copy className="h-4 w-4 mr-2" />
               Copy
@@ -199,9 +239,9 @@ export function TermPaperViewer({ paper, onClose }: TermPaperViewerProps) {
                 <CardContent className="">
                   {/* <div className="prose prose-gray max-w-none">
                     <div className="whitespace-pre-wrap font-serif text-base leading-relaxed"> */}
-                      <AIContentDisplay content={fullContent} />
-                      {/* {fullContent} */}
-                    {/* </div>
+                  <AIContentDisplay content={fullContent} />
+                  {/* {fullContent} */}
+                  {/* </div>
                   </div> */}
                 </CardContent>
               </Card>

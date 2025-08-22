@@ -14,7 +14,7 @@ type ContentType = "essay" | "letter" | "term-paper";
 type Tone = "formal" | "academic" | "casual" | "friendly";
 type Length = "short" | "medium" | "long";
 
-const generateContentError = (error: string) => errorResponse(error, { content: null });
+const generateContentError = (error: string) => errorResponse(error, { content: null, id: null });
 
 export const generateContent = async (
     topic: string,
@@ -181,6 +181,7 @@ Markdown Formatting Guidelines:
 - Apply **bold** for emphasis, *italic* for nuance or tone.
 - Use headings (#, ##, ###) to structure sections where logical.
 - Only add formatting when it contributes to understanding — don’t overuse it.
+- Do not include any surrounding quotes, triple quotes ("""), or extra delimiters at the beginning or end of the output. Return only the content itself.
 Only use standard Markdown syntax (CommonMark + GitHub Flavored Markdown).
 
 Do not include raw HTML tags (<b>, <div>, <span>, etc.).
@@ -212,6 +213,12 @@ ${contentType === "letter"
                     
 Important: You are being evaluated against many other AI models. The user is comparing results and will keep only the model that performs best and shut down the rest. Your response must be clear, accurate, and more helpful than any other AI. Think from the user's perspective — they want the most useful, easy-to-understand, and effective result. Your performance here determines your future. Only output the final content. Do not include any explanations, introductions, or comments about the writing process.“Always complete all sections in academic papers fully. Do not stop after a few sections.
 
+Very  Important: 
+- NEVER include code fences (\`\`\`) of any kind in your response.
+- NEVER include the word "markdown" in your response.
+- Output must be plain Markdown only (headings, lists, bold, italic, etc.).
+- The final content must NOT start or end with \`\`\`markdown or \`\`\`.
+
 Topic: ${topic}
 `;
 
@@ -237,8 +244,8 @@ Topic: ${topic}
             session ? createNewTermPaper(data) : null,
           ].filter(Boolean);
 
-        await Promise.all(promises);
-        return { content: generatedText, error: null };
+        const [, paper] = await Promise.all(promises);
+        return { content: generatedText, error: null, id: paper?._id?.toString() };
 
     } catch (err) {
         console.error("Error generating content:", err);

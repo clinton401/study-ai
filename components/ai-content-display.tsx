@@ -4,9 +4,18 @@ type Props = {
   content: string;
 };
 
- export const AIContentDisplay = ({ content }: Props) => {
+export const AIContentDisplay = ({ content }: Props) => {
+   function sanitizeMarkdown() {
+  return content
+    .replace(/^```markdown\s*/i, "") // remove opening ```markdown
+    .replace(/^```/, "")             // remove any opening ```
+    .replace(/```$/, "");            // remove closing ```
+}
   return (
     <ReactMarkdown
+      // className="prose-pre:bg-transparent 
+      //        prose-blockquote:bg-transparent"
+      
       components={{
         h1: ({ node, ...props }) => (
           <h1 className="text-4xl font-black font-serif my-4" {...props} />
@@ -51,7 +60,7 @@ type Props = {
           ),
       }}
     >
-      {content}
+      {sanitizeMarkdown()}
     </ReactMarkdown>
   );
 };

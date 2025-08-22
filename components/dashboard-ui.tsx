@@ -118,6 +118,14 @@ export const DashboardUI: FC = () => {
 
   const summaries = summaryData?.data;
   const contents = contentData?.data;
+  const handleEditedContent = (content: string) => {
+    setViewingContent(prev => {
+      if (prev.type === "term-paper" && prev.data) {
+        return { type: "term-paper", data: { ...prev.data, content } };
+      }
+      return prev;
+    })
+  }
   return (
     <div className="">
       {/* <FilterControls /> */}
@@ -229,6 +237,7 @@ export const DashboardUI: FC = () => {
         <TermPaperViewer
           paper={viewingContent.data as FullTermPaper}
           onClose={() => setViewingContent({ type: null, data: null })}
+          handleEditedContent={handleEditedContent}
         />
       )}
       {viewingContent.type === "summary" && viewingContent.data && (

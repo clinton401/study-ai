@@ -13,7 +13,7 @@ import {
   Users,
   Briefcase,
   GraduationCap,
-  Notebook
+  Notebook,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -30,7 +30,8 @@ import { CopyExport } from "./copy-exports";
 import { generateContent } from "@/actions/generate-content";
 import createToast from "@/hooks/create-toast";
 import { ERROR_MESSAGES } from "@/lib/error-messages";
-import {AIContentDisplay} from "./ai-content-display"
+import {AIContentDisplay} from "./ai-content-display";
+import {EditContentModal} from "@/components/edit-content-modal";
 
 interface ContentOptions {
   type: string;
@@ -51,6 +52,7 @@ export function ContentGeneratorClient() {
   const [generatedContent, setGeneratedContent] = useState(``);
   const [isGenerating, setIsGenerating] = useState(false);
   const [wordCount, setWordCount] = useState(0);
+  const [paperId, setPaperId] = useState<string | null>(null)
 
   const targetRef = useRef<HTMLDivElement | null>(null);
   const { createError, createSimple } = createToast();
@@ -131,11 +133,12 @@ export function ContentGeneratorClient() {
     try {
       setIsGenerating(true);
       setGeneratedContent("");
+      setPaperId(null)
       const { topic, tone, length, type } = options;
       if(type === "term-paper") {
         createSimple("Generating your term paper. This might take a little while — hang tight!")
       }
-      const { content, error } = await generateContent(
+      const { content, error, id } = await generateContent(
         topic,
         type,
         tone,
@@ -145,6 +148,9 @@ export function ContentGeneratorClient() {
         return createError(error || ERROR_MESSAGES.UNKNOWN_ERROR);
       setGeneratedContent(content);
       setWordCount(content.split(" ").length);
+      if (id) {
+        setPaperId(id);
+      }
       
     targetRef.current?.scrollIntoView({ behavior: 'smooth' });
     } catch (error) {
@@ -396,8 +402,9 @@ export function ContentGeneratorClient() {
                       <FileText className="h-6 w-6 text-blue-600" />
                       <span>Generated Content</span>
                     </CardTitle>
-                    {generatedContent && (
-                      <div className="flex gap-2 flex-wrap">
+                    {generatedContent  && (
+                      <div className="flex gap-1 flex-wrap">
+                        <EditContentModal content={generatedContent} setContent={setGeneratedContent} id={paperId} />
                         <CopyExport
                           content={generatedContent}
                           filename="generated-content"
@@ -409,8 +416,8 @@ export function ContentGeneratorClient() {
                 <CardContent>
                   {generatedContent ? (
                     <div className="space-y-4">
-                      <div className="bg-background rounded-xl p-6 max-h-96 overflow-y-auto">
-                        <pre className="whitespace-pre-wrap text-sm  text-foreground font-sans leading-relaxed">
+                      <div className="bg-background rounded-xl  max-h-[500px] overflow-y-auto">
+                        <pre className="whitespace-pre-wrap p-2 text-sm  text-foreground font-sans leading-relaxed">
                           {/* {generatedContent} */}
                           <AIContentDisplay content={generatedContent} />
                         </pre>

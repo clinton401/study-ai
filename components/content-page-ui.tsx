@@ -70,7 +70,15 @@ const props = {
     setSort,
     type,
     setType
-}
+  }
+   const handleEditedContent = (content: string) => {
+    setViewingContent(prev => {
+      if (prev) {
+        return { ...prev, content } ;
+      }
+      return prev;
+    })
+  }
     return (
       <div className="w-full px-4 py-6 h-full">
         <FilterControls title="Term Papers & Essays" {...props} />
@@ -117,7 +125,10 @@ const props = {
         <section ref={ref} className="w-full"></section>
         {viewingContent && (
                 <TermPaperViewer
-                  paper={viewingContent}
+            paper={viewingContent}
+            sort={sort}
+            type={type}
+            handleEditedContent={handleEditedContent}
                   onClose={() => setViewingContent(null)}
                 />
               )}
