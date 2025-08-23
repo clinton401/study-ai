@@ -109,7 +109,7 @@ export default async function RootLayout({
             <Analytics />
             <Toaster />
             <ParentComp session={session}>
-              <div className="w-full overflow-x-hidden pb-8 flex flex-col items-center justify-center">
+              <div className="w-full overflow-x-hidden pb-8 ">
                 {children}
               </div>
               <Footer />

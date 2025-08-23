@@ -14,7 +14,7 @@ export const metadata: Metadata = {
     "AI proofreader",
   ],
   openGraph: {
-    title: "AI Writing Companion - StudyAI",
+    title: "AI Writing Companion ",
     description:
       "Enhance your writing with AI-powered suggestions for grammar, style, tone, and clarity.",
     url: "https://studyaii.vercel.app/writing-companion",

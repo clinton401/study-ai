@@ -7,9 +7,9 @@ type Props = {
 export const AIContentDisplay = ({ content }: Props) => {
    function sanitizeMarkdown() {
   return content
-    .replace(/^```markdown\s*/i, "") // remove opening ```markdown
-    .replace(/^```/, "")             // remove any opening ```
-    .replace(/```$/, "");            // remove closing ```
+    .replace(/^```markdown\s*/i, "") 
+    .replace(/^```/, "")             
+    .replace(/```$/, "");            
 }
   return (
     <ReactMarkdown

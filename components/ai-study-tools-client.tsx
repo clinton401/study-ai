@@ -10,7 +10,7 @@ import {
   BookOpen,
   Sparkles,
   Loader2,
-  CheckCircle,
+  // CheckCircle,
   RotateCcw,
   Zap,
 } from "lucide-react"
@@ -26,6 +26,8 @@ import extractTextFromPDF from "react-pdftotext";
 import {validateFileSize} from "@/lib/main";
 import { CopyExport } from "./copy-exports";
 import {AIDialog} from "@/components/ai-dialog";
+import { PracticeQuestions } from "./practice-questions";
+import { FlashcardCarousel } from "./flashcard-carousel"
 
 
 export function AIStudyToolsClient() {
@@ -190,15 +192,15 @@ export function AIStudyToolsClient() {
               AI Study Tools
             </h1>
             <p className="text-xl md:text-2xl text-gray-600 dark:text-gray-300 mb-8 max-w-3xl mx-auto">
-              Summarize your notes and ask AI questions based on the content 
-              all from a single upload.
+              Summarize your notes and ask AI questions based on the content all
+              from a single upload.
             </p>
           </motion.div>
         </div>
       </section>
 
       {/* Main Interface */}
-      <section className="pb-20 px-4">
+      <section className="pb-20 w-full px-4">
         <div className="max-w-7xl mx-auto">
           {/* Upload Section */}
           <motion.div
@@ -207,7 +209,7 @@ export function AIStudyToolsClient() {
             transition={{ duration: 0.8, delay: 0.2 }}
             className="mb-8"
           >
-            <Card className="  backdrop-blur-sm  shadow-xl rounded-3xl">
+            <Card className="  backdrop-blur-sm  shadow-xl ">
               <CardHeader>
                 <CardTitle className="flex items-center space-x-2">
                   <Upload className="h-6 w-6 text-blue-600" />
@@ -245,9 +247,7 @@ export function AIStudyToolsClient() {
                       PDF, DOCX, TXT (Max 10MB)
                     </p>
                     {isExtractPending && (
-                      <p className="text-sm text-primary">
-                        Extracting text...
-                      </p>
+                      <p className="text-sm text-primary">Extracting text...</p>
                     )}
                   </label>
                 </div>
@@ -323,7 +323,7 @@ export function AIStudyToolsClient() {
             </Card>
           </motion.div>
           <Card
-            className=" backdrop-blur-sm border-0 shadow-xl rounded-3xl"
+            className=" backdrop-blur-sm border-0 shadow-xl "
             ref={targetRef}
           >
             <CardHeader>
@@ -403,13 +403,16 @@ export function AIStudyToolsClient() {
             </CardContent>
           </Card>
 
-          <motion.div
+          <PracticeQuestions content={inputText} />
+          <FlashcardCarousel content={inputText} />
+
+          {/* <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.6 }}
             className="mt-16"
           >
-            <Card className=" border-0 rounded-3xl">
+            <Card className=" border-0 ">
               <CardContent className="p-8">
                 <h3 className="text-2xl font-bold text-center text-gray-800 dark:text-gray-200 mb-8">
                   How It Works
@@ -451,7 +454,7 @@ export function AIStudyToolsClient() {
                 </div>
               </CardContent>
             </Card>
-          </motion.div>
+          </motion.div> */}
         </div>
       </section>
     </>

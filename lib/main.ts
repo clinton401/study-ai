@@ -62,14 +62,19 @@ export const handleCopy = (content: string) => {
   const plainText = removeMarkdown(content);
   navigator.clipboard.writeText(plainText);
   }
-
+   function sanitizeMarkdown(content: string) {
+  return content
+    .replace(/^```markdown\s*/i, "") 
+    .replace(/^```/, "")             
+    .replace(/```$/, "");            
+}
 
 
   export const handleDownload = async (markdown: string, filename: string) => {
     // @ts-ignore
     const html2pdf = (await import("html2pdf.js")).default;
-  
-    const html = await marked(markdown);
+  const sanitizedText = sanitizeMarkdown(markdown)
+    const html = await marked(sanitizedText);
   
     const container = document.createElement("div");
     container.innerHTML = html;

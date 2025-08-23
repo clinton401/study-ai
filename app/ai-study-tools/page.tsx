@@ -2,7 +2,7 @@ import type { Metadata } from "next"
 import { AIStudyToolsClient } from "@/components/ai-study-tools-client"
 
 export const metadata: Metadata = {
-  title: "AI Study Tools - StudyAI",
+  title: "AI Study Tools",
   description:
     "Upload your notes and get AI-powered summaries and practice quizzes instantly. Support for PDF, DOCX, and text files.",
   keywords: [
@@ -14,7 +14,7 @@ export const metadata: Metadata = {
     "practice questions",
   ],
   openGraph: {
-    title: "AI Study Tools - StudyAI",
+    title: "AI Study Tools",
     description:
       "Upload your notes and get AI-powered summaries and practice quizzes instantly.",
     url: "https://studyaii.vercel.app/ai-study-tools",
