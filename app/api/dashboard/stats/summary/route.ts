@@ -48,12 +48,13 @@ export async function GET(req: NextRequest) {
     const prevPage = page > 1 ? page - 1 : null;
 
     const sortObj: Record<string, 1 | -1> = {};
-    if (sort.startsWith("-")) {
-      sortObj[sort.substring(1)] = -1;
-    } else {
-      sortObj[sort] = 1;
-    }
-
+    if (sort === "createdAt") {
+  sortObj["createdAt"] = -1;
+} else if (sort.startsWith("-")) {
+  sortObj[sort.substring(1)] = -1;
+} else {
+  sortObj[sort] = 1;
+}
     const data = await UserSummary.find({ userId })
       .sort(sortObj)
       .skip(skip)

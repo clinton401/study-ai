@@ -92,7 +92,7 @@ export function FlashcardCarousel({
   return (
 
 <Card className="shadow-lg mt-16">
-  <CardHeader className="flex flex-row items-center justify-between">
+  <CardHeader className="flex flex-row items-center flex-wrap gap-1 justify-between">
     <CardTitle className="text-xl">Flashcards</CardTitle>
     {flashcards.length === 0 && (
       <Button

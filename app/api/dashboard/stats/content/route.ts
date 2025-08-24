@@ -48,7 +48,6 @@ export async function GET(req: NextRequest) {
 
     const userId = session.id;
 
-    // Build query filter
     const queryFilter: {userId: Types.ObjectId, type?: string} = { userId };
     if (type !== "all") {
       queryFilter.type = type;
@@ -62,7 +61,9 @@ export async function GET(req: NextRequest) {
     const prevPage = page > 1 ? page - 1 : null;
 
     const sortObj: Record<string, 1 | -1> = {};
-    if (sort.startsWith("-")) {
+    if (sort === "createdAt") {
+      sortObj["createdAt"] = -1;
+    } else if (sort.startsWith("-")) {
       sortObj[sort.substring(1)] = -1;
     } else {
       sortObj[sort] = 1;

@@ -327,7 +327,7 @@ export function AIStudyToolsClient() {
             ref={targetRef}
           >
             <CardHeader>
-              <div className="flex items-center gap-2 justify-between">
+              <div className="flex items-center  flex-wrap gap-1 justify-between">
                 <CardTitle className="flex items-center space-x-2">
                   <BookOpen className="h-6 w-6 text-blue-600" />
                   <span>AI Summary</span>

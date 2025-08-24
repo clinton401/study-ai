@@ -98,7 +98,7 @@ const checkAllAnswers = () => {
 
   return (
     <Card className="shadow-lg mt-16" ref={targetRef}>
-      <CardHeader className="flex flex-row items-center justify-between">
+      <CardHeader className="flex flex-row items-center flex-wrap gap-1 justify-between">
         <CardTitle className="text-xl">Practice Questions</CardTitle>
         {questions.length === 0 && (
           <Button
