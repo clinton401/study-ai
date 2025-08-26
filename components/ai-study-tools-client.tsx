@@ -28,6 +28,8 @@ import { CopyExport } from "./copy-exports";
 import {AIDialog} from "@/components/ai-dialog";
 import { PracticeQuestions } from "./practice-questions";
 import { FlashcardCarousel } from "./flashcard-carousel"
+import {AIContentDisplay} from "./ai-content-display";
+import { ScrollArea } from "@/components/ui/scroll-area"
 
 
 export function AIStudyToolsClient() {
@@ -364,7 +366,7 @@ export function AIStudyToolsClient() {
                     className="space-y-4"
                   >
                     <div className="flex items-center flex-wrap gap-2 justify-between">
-                      <div className="flex space-2 flex-wrap ">
+                      <div className="flex gap-2 flex-wrap ">
                         <CopyExport content={summary} filename="summary" />
                       </div>
                       <Button
@@ -377,11 +379,12 @@ export function AIStudyToolsClient() {
                         Generate New
                       </Button>
                     </div>
-                    <div className=" w-full  border border-blue-200 dark:border-blue-800 rounded-xl p-6">
-                      <pre className="whitespace-pre-wrap text-sm text-blue-800 dark:text-blue-200 font-sans leading-relaxed">
-                        {summary}
+                    <ScrollArea className=" w-full bg-background rounded-xl h-[450px]">
+                      <pre className="whitespace-pre-wrap p-2 text-sm  text-foreground font-sans leading-relaxed">
+                     
+                          <AIContentDisplay content={summary} />
                       </pre>
-                    </div>
+                    </ScrollArea>
                   </motion.div>
                 ) : (
                   <motion.div

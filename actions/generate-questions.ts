@@ -49,7 +49,9 @@ export const generateQuestions = async (
     if (text.trim().length < 200) {
         return questionError("Please provide at least 200 characters of text to generate questions.");
     }
-
+ if (text.length > 700_000) {
+    return questionError("Text must have maximum 700,000 characters");
+  }
     const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
     if (!GEMINI_API_KEY) return questionError("GEMINI_API_KEY variable is required");
 

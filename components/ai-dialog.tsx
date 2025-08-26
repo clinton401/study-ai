@@ -1,4 +1,4 @@
-import { FC, useEffect, useRef } from "react";
+import { FC, useEffect, useRef, useState } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -20,7 +20,8 @@ import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useChat } from "@ai-sdk/react";
 import handleTextAreaHeight from "@/hooks/handle-text-area-height";
-import useCreateToast from "@/hooks/create-toast"
+import useCreateToast from "@/hooks/create-toast";
+import {AIContentDisplay} from "./ai-content-display";
 
 const TypingIndicator = () => {
   return (
@@ -59,6 +60,7 @@ const ErrorMessage: FC<{ error: string; onRetry?: () => void }> = ({
 };
 
 export const AIDialog: FC<{ text: string }> = ({ text }) => {
+  const [open, setOpen] = useState(false);
   const {
     messages,
     setMessages,
@@ -100,11 +102,13 @@ const {createError} = useCreateToast();
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      scrollToBottom();
+      if (open) {
+        scrollToBottom();
+      }
     }, 100);
 
     return () => clearTimeout(timer);
-  }, [messages, isLoading]);
+  }, [messages, isLoading, open]);
 
   useEffect(() => {
     if (status === "submitted" || status === "streaming") {
@@ -139,8 +143,9 @@ const {createError} = useCreateToast();
     setTimeout(scrollToBottom, 50);
   };
 
+
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button
           className="bg-gradient-to-r text-white rounded-full from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 gap-2 flex items-center  "
@@ -211,7 +216,9 @@ const {createError} = useCreateToast();
                       >
                         {message.content && (
                           <p className="text-sm leading-relaxed whitespace-pre-wrap">
-                            {message.content.trim()}
+                            
+                          <AIContentDisplay content={message.content.trim()} chatPage/>
+                            {/* {message.content.trim()} */}
                           </p>
                         )}
                       </div>
@@ -220,7 +227,7 @@ const {createError} = useCreateToast();
                   </div>
                 ))}
 
-                {isLoading && <TypingIndicator />}
+                {status === "submitted" && <TypingIndicator />}
 
                 {hasError && (
                   <ErrorMessage

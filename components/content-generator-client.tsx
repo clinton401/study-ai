@@ -32,6 +32,7 @@ import createToast from "@/hooks/create-toast";
 import { ERROR_MESSAGES } from "@/lib/error-messages";
 import {AIContentDisplay} from "./ai-content-display";
 import {EditContentModal} from "@/components/edit-content-modal";
+import { ScrollArea } from "@/components/ui/scroll-area"
 
 interface ContentOptions {
   type: string;
@@ -416,12 +417,12 @@ export function ContentGeneratorClient() {
                 <CardContent>
                   {generatedContent ? (
                     <div className="space-y-4">
-                      <div className="bg-background rounded-xl  max-h-[500px] overflow-y-auto">
+                      <ScrollArea className="bg-background rounded-xl  h-[450px] w-full">
                         <pre className="whitespace-pre-wrap p-2 text-sm  text-foreground font-sans leading-relaxed">
                           {/* {generatedContent} */}
                           <AIContentDisplay content={generatedContent} />
                         </pre>
-                      </div>
+                      </ScrollArea>
                       <div className="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400">
                         <div className="flex items-center flex-wrap gap-4 w-full">
                           <span>Words: {wordCount}</span>

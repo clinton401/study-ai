@@ -91,7 +91,7 @@ export function FlashcardCarousel({
 
   return (
 
-<Card className="shadow-lg mt-16">
+<Card className="shadow-lg mt-16 max-w-full">
   <CardHeader className="flex flex-row items-center flex-wrap gap-1 justify-between">
     <CardTitle className="text-xl">Flashcards</CardTitle>
     {flashcards.length === 0 && (
@@ -107,7 +107,7 @@ export function FlashcardCarousel({
   </CardHeader>
 
   {flashcards.length > 0 ? (
-    <CardContent className="space-y-4">
+    <CardContent className="space-y-4 ">
       <div className="relative">
         <div
           className="bg-gradient-to-br from-primary/5 to-primary/10 rounded-lg p-8 min-h-48 flex items-center justify-center cursor-pointer transition-transform hover:scale-105"

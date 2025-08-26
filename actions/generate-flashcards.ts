@@ -44,6 +44,9 @@ export const generateFlashcards = async (text: string, count: number = 20) => {
   if (text.trim().length < 200) {
     return flashcardError("Please provide at least 200 characters of text to generate flashcards.");
   }
+   if (text.length > 700_000) {
+    return flashcardError("Text must have maximum 700,000 characters");
+  }
 
   const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
   if (!GEMINI_API_KEY) return flashcardError("GEMINI_API_KEY variable is required");

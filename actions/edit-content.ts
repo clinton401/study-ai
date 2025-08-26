@@ -32,6 +32,9 @@ try{
         )
     }
 
+     if (content.length > 700_000) {
+    return editContentError("Content to be edited must have maximum 700,000 characters");
+  }
     if (editMessage.trim().length < 2) {
         return editContentError(
             "Your edit instructions are too short. Please enter at least 2 characters."
@@ -55,12 +58,12 @@ try{
             const isGuest = !session;
             const limit = isGuest ? 4 : 10;
     
-            if (usageCount >= limit) {
-                const message = isGuest
-                    ? "You've reached your free daily limit (4/4). Sign in to unlock more content edits!"
-                    : "Daily AI content edits limit reached (10/10).";
-                return editContentError(message);
-    }
+    //         if (usageCount >= limit) {
+    //             const message = isGuest
+    //                 ? "You've reached your free daily limit (4/4). Sign in to unlock more content edits!"
+    //                 : "Daily AI content edits limit reached (10/10).";
+    //             return editContentError(message);
+    // }
     
      const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
     

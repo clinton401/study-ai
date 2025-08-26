@@ -1,21 +1,32 @@
-import ReactMarkdown from 'react-markdown';
+import ReactMarkdown from "react-markdown";
 
 type Props = {
-  content: string;
+  content: string | { type: string; text: string }[];
+  chatPage?: boolean;
 };
 
-export const AIContentDisplay = ({ content }: Props) => {
-   function sanitizeMarkdown() {
-  return content
-    .replace(/^```markdown\s*/i, "") 
-    .replace(/^```/, "")             
-    .replace(/```$/, "");            
-}
+export const AIContentDisplay = ({ content, chatPage = false }: Props) => {
+  // Normalize Vercel AI SDK content into a string
+  const normalized =
+    Array.isArray(content)
+      ? content.map((c) => ("text" in c ? c.text : "")).join("\n")
+      : content;
+
+  function sanitizeMarkdown(c: string) {
+    return c
+      .replace(/^```(?:markdown)?\s*/i, "") // remove ```markdown
+      .replace(/^```/, "")                 // remove ```
+      .replace(/```$/, "");                // remove trailing ```
+  }
+
+  const safeContent = sanitizeMarkdown(normalized);
+
+  if (chatPage) {
+    return <ReactMarkdown>{safeContent}</ReactMarkdown>;
+  }
+
   return (
     <ReactMarkdown
-      // className="prose-pre:bg-transparent 
-      //        prose-blockquote:bg-transparent"
-      
       components={{
         h1: ({ node, ...props }) => (
           <h1 className="text-4xl font-black font-serif my-4" {...props} />
@@ -46,7 +57,7 @@ export const AIContentDisplay = ({ content }: Props) => {
             {...props}
           />
         ),
-          // @ts-ignore
+        // @ts-ignore
         code: ({ node, inline, ...props }) =>
           inline ? (
             <code
@@ -60,8 +71,7 @@ export const AIContentDisplay = ({ content }: Props) => {
           ),
       }}
     >
-      {sanitizeMarkdown()}
+      {safeContent}
     </ReactMarkdown>
   );
 };
-
