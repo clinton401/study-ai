@@ -21,11 +21,15 @@ import fetchData from "@/hooks/fetch-data";
 interface DashboardStats {
   totalDocuments: number;
   totalSummaries: number;
+  totalFlashcards: number;
+  totalQuizzes: number;
   activeProjects: number;
   documentsThisMonth: number;
   changes: {
     documents: number;
     summaries: number;
+    flashcards: number;
+    quizzes: number;
     activeProjects: number;
   };
 }
@@ -87,18 +91,7 @@ function StatsError({ onRetry, error }: StatsErrorProps) {
 }
 
 export function AnalyticsCards() {
-  // const {
-  //   data: stats,
-  //   isLoading,
-  //   isError,
-  //   refetch,
-  // } = useQuery<DashboardStats>({
-  //   queryKey: ["dashboardStats"],
-  //   queryFn: fetchDashboardStats,
-  //   staleTime: 5 * 60 * 1000, // 5 minutes
-  //   gcTime: 10 * 60 * 1000, // 10 minutes (formerly cacheTime)
-  //   retry: 2,
-  // });
+
 
   const {
     data: stats,
@@ -122,9 +115,6 @@ export function AnalyticsCards() {
     return <StatsError onRetry={() => refetch()} error={error } />;
   }
 
-  // if (!stats) {
-  //   return <StatsError onRetry={() => refetch()} />;
-  // }
 
   return (
     <div className="grid gap-4 md:grid-cols-4">
@@ -164,7 +154,30 @@ export function AnalyticsCards() {
           </p>
         </CardContent>
       </Card>
-
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-sm font-medium">Flashcard Sets</CardTitle>
+          <BookOpen className="h-4 w-4 text-muted-foreground" />
+        </CardHeader>
+        <CardContent>
+          <div className="text-2xl font-bold">{stats.totalFlashcards}</div>
+          <p className="text-xs text-muted-foreground">
+            {formatChange(stats.changes.flashcards)}
+          </p>
+        </CardContent>
+      </Card>
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-sm font-medium">Quiz Sets</CardTitle>
+          <FileText className="h-4 w-4 text-muted-foreground" />
+        </CardHeader>
+        <CardContent>
+          <div className="text-2xl font-bold">{stats.totalQuizzes}</div>
+          <p className="text-xs text-muted-foreground">
+            {formatChange(stats.changes.quizzes)}
+          </p>
+        </CardContent>
+      </Card>
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium">This Month</CardTitle>

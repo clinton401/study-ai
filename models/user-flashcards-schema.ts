@@ -1,4 +1,4 @@
-import { Schema, Document, models, model } from "mongoose";
+import { Schema, models, model, Types } from "mongoose";
 
 export interface Flashcard {
   id: number;
@@ -6,14 +6,16 @@ export interface Flashcard {
   back: string;   // Answer or definition
 }
 
-export interface UserFlashcardsDoc extends Document {
+export interface UserFlashcardsDoc  {
   userId: string;
   flashcards: Flashcard[];
   originalText: string;
   count: number;
   createdAt: Date;
 }
-
+export type FullUserFlashcard = UserFlashcardsDoc & {
+  _id: Types.ObjectId
+}
 const FlashcardSchema = new Schema<Flashcard>(
   {
     id: { type: Number, required: true },

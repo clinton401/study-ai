@@ -1,4 +1,4 @@
-import  { Schema, Document, models, model } from "mongoose";
+import  { Schema, Types, models, model } from "mongoose";
 
 export interface Question {
     id: number;
@@ -7,12 +7,15 @@ export interface Question {
     correctAnswer: number;
 }
 
-export interface UserQuestionsDoc extends Document {
+export interface UserQuestionsDoc  {
     userId: string;
     questions: Question[];
     originalText: string;
     count: number;
     createdAt: Date;
+}
+export type FullUserQuestion = UserQuestionsDoc & {
+  _id: Types.ObjectId
 }
 
 const QuestionSchema = new Schema<Question>(

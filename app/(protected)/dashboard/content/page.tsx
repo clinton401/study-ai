@@ -19,7 +19,6 @@ export const metadata: Metadata = {
     description:
       "Access your AI-generated essays, term papers, and letters in one organized place with StudyAI.",
     url: "https://studyaii.vercel.app/dashboard/content",
-    // images: ["/og-content.jpg"],
   },
   alternates: {
     canonical: "/dashboard/content",

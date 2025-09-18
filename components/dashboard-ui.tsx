@@ -5,6 +5,8 @@ import { QueryFunctionContext } from "@tanstack/react-query";
 
 import { SummaryCard } from "@/components/summary-card";
 import { SummaryViewer } from "@/components/summary-viewer";
+import { QuizViewer } from "@/components/quiz-viewer";
+import { FlashcardViewer } from "@/components/flashcard-viewer";
 import { TermPaperCard } from "@/components/term-paper-card";
 import { TermPaperViewer } from "@/components/term-paper-viewer";
 import { Button } from "@/components/ui/button";
@@ -18,6 +20,10 @@ import {
 import { FullUserSummary } from "@/models/user-summary";
 import { FullTermPaper } from "@/models/term-paper";
 import Link from "next/link";
+import { FullUserFlashcard } from "@/models/user-flashcards-schema";
+import {FlashcardSetCard} from "@/components/flashcard-set-card";
+import {QuizSetCard} from "@/components/quiz-set-card";
+import {FullUserQuestion} from "@/models/user-questions-schema";
 
 interface PaginatedSummaryResponse {
   data: FullUserSummary[];
@@ -35,6 +41,22 @@ interface PaginatedContentResponse {
   nextPage: number | null;
   prevPage: number | null;
 }
+interface PaginatedFlashcardResponse {
+  data: FullUserFlashcard[];
+  currentPage: number;
+  totalPages: number;
+  total: number;
+  nextPage: number | null;
+  prevPage: number | null;
+}
+interface PaginatedQuizResponse {
+  data: FullUserQuestion[];
+  currentPage: number;
+  totalPages: number;
+  total: number;
+  nextPage: number | null;
+  prevPage: number | null;
+}
 
 interface StatsErrorProps {
   onRetry: () => void;
@@ -43,6 +65,8 @@ interface StatsErrorProps {
 
 type SummaryQueryKey = ["stats-summary"];
 type ContentQueryKey = ["stats-content"];
+type FlashcardQueryKey = ["stats-flashcard"];
+type QuizQueryKey = ["stats-quiz"];
 const fetchSummary = async ({
   signal,
 }: QueryFunctionContext<SummaryQueryKey>): Promise<PaginatedSummaryResponse> => {
@@ -64,6 +88,30 @@ const fetchContent = async ({
   if (!response.ok) {
     const errorData = await response.json();
     throw new Error(errorData?.error || "Failed to fetch contents generated");
+  }
+  return response.json();
+};
+const fetchFlashcard = async ({
+  signal,
+}: QueryFunctionContext<FlashcardQueryKey>): Promise<PaginatedFlashcardResponse> => {
+  const response = await fetch("/api/dashboard/stats/flashcards?limit=3", {
+    signal,
+  });
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData?.error || "Failed to fetch flashcards generated");
+  }
+  return response.json();
+};
+const fetchQuiz = async ({
+  signal,
+}: QueryFunctionContext<QuizQueryKey>): Promise<PaginatedQuizResponse> => {
+  const response = await fetch("/api/dashboard/stats/quiz?limit=3", {
+    signal,
+  });
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData?.error || "Failed to fetch quiz generated");
   }
   return response.json();
 };
@@ -94,8 +142,8 @@ function StatsError({ onRetry, error }: StatsErrorProps) {
 
 export const DashboardUI: FC = () => {
     const [viewingContent, setViewingContent] = useState<{
-      type: "term-paper" | "summary" | null;
-      data: FullUserSummary | FullTermPaper | null;
+      type: "term-paper" | "summary" | "flashcards" | "quiz" | null;
+      data: FullUserSummary | FullTermPaper | FullUserQuestion | FullUserFlashcard | null;
     }>({ type: null, data: null });
   const {
     data: summaryData,
@@ -115,16 +163,36 @@ export const DashboardUI: FC = () => {
     ["stats-content"],
     fetchContent
   );
+  const {
+    data: flashcardData,
+    error: flashcardError,
+    isLoading: flashcardLoading,
+    refetch: refetchFlashcard,
+  } = fetchData<PaginatedFlashcardResponse, FlashcardQueryKey>(
+    ["stats-flashcard"],
+    fetchFlashcard
+  );
+  const {
+    data: quizData,
+    error: quizError,
+    isLoading: quizLoading,
+    refetch: refetchQuiz,
+  } = fetchData<PaginatedQuizResponse, QuizQueryKey>(
+    ["stats-quiz"],
+    fetchQuiz
+  );
 
   const summaries = summaryData?.data;
   const contents = contentData?.data;
+  const flashcards = flashcardData?.data;
+  const quizzes = quizData?.data;
   const handleEditedContent = (content: string) => {
-    setViewingContent(prev => {
+    setViewingContent((prev) => {
       if (prev.type === "term-paper" && prev.data) {
         return { type: "term-paper", data: { ...prev.data, content } };
       }
       return prev;
-    })
+    });
   }
   return (
     <div className="">
@@ -232,6 +300,106 @@ export const DashboardUI: FC = () => {
             )}
           </div>
         </section>
+
+        <Separator />
+
+        <section>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-2xl font-bold tracking-tight">
+              Flashcard Sets
+            </h2>
+              <Button asChild variant="outline">
+              <Link href="/dashboard/flashcards">View All</Link>
+            </Button>
+          </div>
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {flashcardLoading && (
+              <>
+                {Array.from({ length: 3 }).map((_, i) => (
+                  <SummaryCardSkeleton key={i} />
+                ))}
+              </>
+            )}
+            {!flashcardLoading && (flashcardError || !flashcards) && (
+              <StatsError
+                onRetry={() => refetchFlashcard()}
+                error={flashcardError}
+              />
+            )}
+
+            {!flashcardLoading && !flashcardError && flashcards && (
+              <>
+                {flashcards.length > 0 ? (
+                  <>
+                    {flashcards.map((flashcardSet) => (
+                      <FlashcardSetCard
+                        key={flashcardSet._id.toString()}
+                        flashcardSet={flashcardSet}
+                        onView={(set: FullUserFlashcard) =>
+                          setViewingContent({ type: "flashcards", data: set })
+                        }
+                      />
+                    ))}
+                  </>
+                ) : (
+                  <p className="text-center w-full col-span-3 py-8 ">
+                    Looks like you don’t have any flashcards yet. Create one now
+                    to get started!
+                  </p>
+                )}
+              </>
+            )}
+          </div>
+        </section>
+
+        
+              <Separator />
+
+              <section>
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-2xl font-bold tracking-tight">Quiz Sets</h2>
+                  <Button asChild variant="outline">
+              <Link href="/dashboard/quiz">View All</Link>
+            </Button>
+                </div>
+                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                 {quizLoading && (
+              <>
+                {Array.from({ length: 3 }).map((_, i) => (
+                  <SummaryCardSkeleton key={i} />
+                ))}
+              </>
+            )}
+            {!quizLoading && (quizError || !quizzes) && (
+              <StatsError
+                onRetry={() => refetchQuiz()}
+                error={quizError}
+              />
+            )}
+
+            {!quizLoading && !quizError && quizzes && (
+              <>
+                {quizzes.length > 0 ? (
+                  <>
+                    {quizzes.map((quizSet) => (
+                    <QuizSetCard
+                      key={quizSet._id.toString()}
+                      quizSet={quizSet}
+                      onView={(set) => setViewingContent({ type: "quiz", data: set })}
+                    />
+                  ))}
+                  </>
+                ) : (
+                  <p className="text-center w-full col-span-3 py-8 ">
+                    Looks like you don’t have any quizzes yet. Create one now
+                    to get started!
+                  </p>
+                )}
+              </>
+            )}
+                 
+                </div>
+              </section>
       </div>
       {viewingContent.type === "term-paper" && viewingContent.data && (
         <TermPaperViewer
@@ -246,6 +414,15 @@ export const DashboardUI: FC = () => {
           onClose={() => setViewingContent({ type: null, data: null })}
         />
       )}
+      {viewingContent.type === "flashcards" && viewingContent.data && (
+        <FlashcardViewer
+          flashcardSet={viewingContent.data as FullUserFlashcard}
+          onClose={() => setViewingContent({ type: null, data: null })}
+        />
+      )}
+       {viewingContent.type === "quiz" && (
+          <QuizViewer quizSet={viewingContent.data as FullUserQuestion} onClose={() => setViewingContent({ type: null, data: null })} />
+        )}
     </div>
   );
 };

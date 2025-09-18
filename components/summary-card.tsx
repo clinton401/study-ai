@@ -21,6 +21,7 @@ import {useState} from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import createToast from "@/hooks/create-toast";
 import {useRouter} from "next/navigation";
+import { handleDownload } from "@/lib/main";
 
 // type Summary = {
 //   id: number;
@@ -99,6 +100,14 @@ const {refresh} = useRouter();
     }
   };
 
+    const downloadHandler = async () => {
+      try {
+        await handleDownload(summary.originalText, summary.summary.slice(0, 20));
+      } catch (error) {
+        console.error(`Failed to download file: ${error}`);
+      }
+    };
+
   return (
     <Card className="hover:shadow-md transition-shadow">
       <CardHeader>
@@ -122,7 +131,7 @@ const {refresh} = useRouter();
                 <Eye className="mr-2 h-4 w-4" />
                 View
               </DropdownMenuItem>
-              <DropdownMenuItem>
+              <DropdownMenuItem onClick={downloadHandler}>
                 <Download className="mr-2 h-4 w-4" />
                 Download
               </DropdownMenuItem>

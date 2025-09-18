@@ -43,9 +43,9 @@ useEffect(() => {
     { name: "Home", href: "/" },
     { name: "Features", href: "/features" },
     { name: "Content Generator", href: "/content-generator" },
-    { name: "Writing Companion", href: "/writing-companion" },
     { name: "Summary", href: "/ai-study-tools" },
-  ]
+    { name: "Writing Companion", href: "/writing-companion" },
+  ];
   const handleLogout = async () => {
     if (isPending) return;
     try {
@@ -133,6 +133,9 @@ useEffect(() => {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent className="w-56" align="start">
+                    <DropdownMenuItem onClick={() => push("/dashboard")}>
+                      Dashboard
+                    </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => push("/settings")}>
                       Settings
                     </DropdownMenuItem>
@@ -200,7 +203,7 @@ useEffect(() => {
                       </Button>
                     </Link>
                     <Link href="/register">
-                      <Button className="w-full  ">
+                      <Button className="w-full ">
                         Register
                       </Button>
                     </Link>
@@ -210,6 +213,11 @@ useEffect(() => {
                     <Link href="/settings">
                       <Button variant="ghost" className="w-full justify-start">
                         Settings
+                      </Button>
+                    </Link>
+                    <Link href="/dashboard">
+                      <Button variant="ghost" className="w-full justify-start">
+                        Dashboard
                       </Button>
                     </Link>
                     <Button
