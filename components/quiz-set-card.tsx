@@ -12,10 +12,10 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuSeparator,
+  
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Download, Eye, MoreHorizontal, Trash2 } from "lucide-react";
+import { Download, Eye, MoreHorizontal } from "lucide-react";
 import { handleDownload } from "@/lib/main";
 import {FullUserQuestion} from "@/models/user-questions-schema";
 

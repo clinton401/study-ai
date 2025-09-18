@@ -9,6 +9,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import type React from "react";
 import "./globals.css";
+import { SpeedInsights } from "@vercel/speed-insights/next"
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -107,6 +108,7 @@ export default async function RootLayout({
             disableTransitionOnChange
           >
             <Analytics />
+            <SpeedInsights />
             <Toaster />
             <ParentComp session={session}>
               <div className="w-full overflow-x-hidden pb-8 ">
