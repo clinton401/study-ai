@@ -62,6 +62,17 @@ useEffect(() => {
   };
   if (pathname === "/dashboard") return;
 
+  const getFirstTwoInitials = (name: string): string =>  {
+  return name
+    .trim()
+    .split(/\s+/)          // split by any amount of whitespace
+    .slice(0, 2)           // take first two words
+    .map(word => word.charAt(0)) // first letter of each
+    .join('')
+    .toUpperCase();
+}
+
+
   return (
     <motion.nav
       initial={{ y: -100 }}
@@ -129,7 +140,7 @@ useEffect(() => {
                       variant="outline"
                       className="rounded-full max-w-[150px] truncate"
                     >
-                      {session.name} <ChevronDown />{" "}
+                      {getFirstTwoInitials(session.name)} <ChevronDown />{" "}
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent className="w-56" align="start">
