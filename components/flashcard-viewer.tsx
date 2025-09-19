@@ -64,14 +64,14 @@ export function FlashcardViewer({ flashcardSet, onClose }: FlashcardViewerProps)
     <div className="fixed inset-0 z-50 bg-background">
       <div className="flex h-full flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between border-b px-6 py-4">
-          <div className="flex items-center gap-4">
+        <div className="flex items-center justify-between flex-wrap gap-4 border-b px-6 py-4">
+          <div className="flex items-center flex-wrap gap-4">
             <Button variant="ghost" size="icon" onClick={onClose}>
               <ArrowLeft className="h-4 w-4" />
             </Button>
             <div>
               <h1 className="text-xl font-semibold">Flashcard Set</h1>
-              <div className="flex items-center gap-2 mt-1">
+              <div className="flex items-center flex-wrap gap-2 mt-1">
                 <Badge className="bg-green-100 text-green-800">{flashcardSet.count} cards</Badge>
                 <span className="text-sm text-muted-foreground">
                   {new Date(flashcardSet.createdAt).toLocaleDateString()}
@@ -79,17 +79,8 @@ export function FlashcardViewer({ flashcardSet, onClose }: FlashcardViewerProps)
               </div>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            {/* <Button
-              variant={viewMode === "study" ? "default" : "outline"}
-              size="sm"
-              onClick={() => setViewMode("study")}
-            >
-              Study Mode
-            </Button>
-            <Button variant={viewMode === "list" ? "default" : "outline"} size="sm" onClick={() => setViewMode("list")}>
-              List View
-                      </Button> */}
+          <div className="flex items-center flex-wrap gap-2">
+           
                       <ToggleGroup
   type="single"
   value={viewMode}
@@ -127,7 +118,7 @@ export function FlashcardViewer({ flashcardSet, onClose }: FlashcardViewerProps)
           {viewMode === "study" ? (
             <div className="flex flex-col items-center justify-center h-full p-6">
               <div className="w-full max-w-2xl">
-                <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center flex-wrap gap-2 justify-between mb-4">
                   <span className="text-sm text-muted-foreground">
                     Card {currentCardIndex + 1} of {flashcardSet.flashcards.length}
                   </span>
@@ -147,12 +138,12 @@ export function FlashcardViewer({ flashcardSet, onClose }: FlashcardViewerProps)
                   </CardContent>
                 </Card>
 
-                <div className="flex items-center justify-between mt-6">
+                <div className="flex items-center flex-wrap gap-2 justify-center mt-6">
                   <Button variant="outline" onClick={handlePrevious} disabled={currentCardIndex === 0}>
                     <ChevronLeft className="h-4 w-4 mr-2" />
                     Previous
                   </Button>
-                  <div className="flex gap-1">
+                  <div className="flex flex-wrap gap-1">
                     {flashcardSet.flashcards.map((_, index) => (
                       <div
                         key={index}

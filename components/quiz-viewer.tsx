@@ -50,14 +50,14 @@ export function QuizViewer({ quizSet, onClose }: QuizViewerProps) {
     <div className="fixed inset-0 z-50 bg-background">
       <div className="flex h-full flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between border-b px-6 py-4">
-          <div className="flex items-center gap-4">
+        <div className="flex items-center justify-between border-b flex-wrap gap-4 px-6 py-4">
+          <div className="flex items-center flex-wrap gap-4">
             <Button variant="ghost" size="icon" onClick={onClose}>
               <ArrowLeft className="h-4 w-4" />
             </Button>
             <div>
               <h1 className="text-xl font-semibold">Quiz Set</h1>
-              <div className="flex items-center gap-2 mt-1">
+              <div className="flex items-center flex-wrap  gap-2 mt-1">
                 <Badge className="bg-purple-100 text-purple-800">
                   {quizSet.count} questions
                 </Badge>
@@ -67,7 +67,7 @@ export function QuizViewer({ quizSet, onClose }: QuizViewerProps) {
               </div>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center flex-wrap gap-2">
             <CopyExport
               content={quizContent}
               filename={quizSet.originalText.slice(0, 10)}

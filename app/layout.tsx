@@ -6,12 +6,12 @@ import { Toaster } from "@/components/ui/toaster";
 import getServerUser from "@/hooks/get-server-user";
 import { Analytics } from "@vercel/analytics/next";
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Roboto } from "next/font/google";
 import type React from "react";
 import "./globals.css";
 import { SpeedInsights } from "@vercel/speed-insights/next"
 
-const inter = Inter({ subsets: ["latin"] });
+const inter = Roboto({ subsets: ["latin"], displap: "swap" });
 
 export const metadata: Metadata = {
   title: {
