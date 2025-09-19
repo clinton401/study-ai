@@ -11,7 +11,7 @@ import type React from "react";
 import "./globals.css";
 import { SpeedInsights } from "@vercel/speed-insights/next"
 
-const inter = Roboto({ subsets: ["latin"], displap: "swap" });
+const inter = Roboto({ subsets: ["latin"], display: "swap" });
 
 export const metadata: Metadata = {
   title: {
