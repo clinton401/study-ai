@@ -115,7 +115,7 @@ export default async function RootLayout({
             <SpeedInsights />
             <Toaster />
             <ParentComp session={session}>
-              <div className="w-full overflow-x-hidden pb-8 ">
+              <div className="w-full overflow-x-hidden pb-8 flex flex-col items-center  px-4  ">
                 {children}
               </div>
               <Footer />

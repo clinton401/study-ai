@@ -20,7 +20,8 @@ import { rephraseText } from "@/actions/rephrase-text";
 import createToast from "@/hooks/create-toast";
 import { ERROR_MESSAGES } from "@/lib/error-messages";
 import { fixGrammar } from "@/actions/fix-grammar";
-import { CopyExport } from "./copy-exports"
+import { CopyExport } from "./copy-exports";
+import {WritingEditor} from "@/components/writing-editor"
 
 const toneOptions = [
   { value: "formal", label: "Formal", icon: Briefcase },
@@ -184,7 +185,7 @@ export function WritingCompanionClient() {
   return (
     <>
       {/* Hero Section */}
-      <section className="pt-32 pb-12 px-4">
+      {/* <section className="pt-32 pb-12 px-4">
         <div className="max-w-7xl mx-auto text-center">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -203,13 +204,14 @@ export function WritingCompanionClient() {
             </p>
           </motion.div>
         </div>
-      </section>
+      </section> */}
 
-      {/* Writing Interface */}
+      <WritingEditor />
+
       <section className="pb-20 px-4">
         <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Main Editor */}
+        
             <div className="lg:col-span-2">
               <motion.div
                 initial={{ opacity: 0, x: -30 }}
@@ -398,7 +400,10 @@ export function WritingCompanionClient() {
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.8, delay: 0.4 }}
               >
-                <Card className=" backdrop-blur-sm border-0 shadow-xl rounded-3xl" ref={targetRef}>
+                <Card
+                  className=" backdrop-blur-sm border-0 shadow-xl rounded-3xl"
+                  ref={targetRef}
+                >
                   <CardHeader>
                     <CardTitle className="flex items-center space-x-2">
                       <Wand2 className="h-5 w-5 text-purple-600" />
@@ -407,7 +412,7 @@ export function WritingCompanionClient() {
                   </CardHeader>
                   <CardContent>
                     {suggestions.length > 0 ? (
-                      <div className="space-y-3" >
+                      <div className="space-y-3">
                         {suggestions.map((suggestion, index) => (
                           <div
                             key={index}

@@ -23,7 +23,7 @@ export const ParentComp: FC<{
   const isVerifyEmail = verifyRegex.test(pathname);
   const isResetPassword = resetRegex.test(pathname);
   
-  const authRoutes = ["/login", "/register", "/error", "/reset"];
+  const authRoutes = ["/login", "/register", "/error", "/reset", "/forgot-password"];
   
   const isAuthRoute = authRoutes.includes(pathname);
   
