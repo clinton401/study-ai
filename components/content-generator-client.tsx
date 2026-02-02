@@ -137,7 +137,7 @@ export function ContentGeneratorClient() {
       setPaperId(null)
       const { topic, tone, length, type } = options;
       if(type === "term-paper") {
-        createSimple("Generating your term paper. This might take a little while — hang tight!")
+        createSimple("Generating your term paper. This might take a little while.")
       }
       const { content, error, id } = await generateContent(
         topic,
