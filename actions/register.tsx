@@ -16,7 +16,7 @@ try{
     const result = registerSchema.safeParse(values);
     if (!result.success) return errorResponse(ERROR_MESSAGES.INVALID_FIELDS, {redirect: null});
     const userId = await getOrCreateGuestId();
-    const { error: rateLimitError } = rateLimit(userId, false);
+    const { error: rateLimitError } = await rateLimit(userId, {}, false, "AUTH");
         if (rateLimitError) return errorResponse(rateLimitError, { redirect: null });
     await connectToDatabase();
     const {email, password, name} = result.data;

@@ -15,7 +15,7 @@ export const verifyEmail = async (userId: string, data: VerifyEmailFormData) => 
     const result = verifyEmailSchema.safeParse(data);
     if (!result.success) return errorResponse(ERROR_MESSAGES.INVALID_FIELDS);
     const guestId = await getOrCreateGuestId();
-    const { error } = rateLimit(guestId, false)
+    const { error } = await rateLimit(guestId, {}, false, "AUTH")
     if (error) return errorResponse(error)
     try {
 

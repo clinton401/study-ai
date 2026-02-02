@@ -16,7 +16,7 @@ export const updatePassword = async (data: ChangePasswordFormData) => {
         }
         const result = changePasswordSchema.safeParse(data);
         if (!result.success) return errorResponse(ERROR_MESSAGES.INVALID_FIELDS);
-        const { error } = rateLimit(session.id, true);
+        const { error } = await rateLimit(session.id, {}, true, "SETTINGS");
         if (error) return errorResponse(error);
         const { currentPassword, newPassword } = result.data;
         await connectToDatabase();

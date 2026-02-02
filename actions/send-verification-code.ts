@@ -17,7 +17,7 @@ export const sendVerificationCode = async (userId: Types.ObjectId | string, emai
     try {
 
         const guestId = await getOrCreateGuestId();
-        const { error } = rateLimit(guestId, false);
+        const { error } = await rateLimit(guestId, {}, false, "AUTH");
         if (error) return errorResponse(error)
         await connectToDatabase();
         const validId = new Types.ObjectId(userId);

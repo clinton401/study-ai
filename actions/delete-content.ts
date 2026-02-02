@@ -13,7 +13,7 @@ export const deleteContent = async(id: Types.ObjectId) => {
         
         const session = await getServerUser();
         if (!session) return errorResponse(ERROR_MESSAGES.UNAUTHORIZED);
-        const { error } = rateLimit(session.id, true);
+        const { error } = await rateLimit(session.id, {}, true, "DELETE_CONTENT");
         if (error) return errorResponse(error);
 
         const content = await TermPaper.findOne({ _id: id, userId: session.id });

@@ -15,7 +15,7 @@ export const changeEmail = async (data: ChangeEmailFormData) => {
         }
         const result = changeEmailSchema.safeParse(data);
         if (!result.success) return errorResponse(ERROR_MESSAGES.INVALID_FIELDS);
-        const { error } = rateLimit(session.id, true);
+        const { error } = await rateLimit(session.id, {}, true, "SETTINGS");
         if (error) return errorResponse(error);
         const { newEmail } = result.data;
         await connectToDatabase();

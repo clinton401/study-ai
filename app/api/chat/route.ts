@@ -1,5 +1,5 @@
 import { google } from "@ai-sdk/google";
-import { streamText, convertToModelMessages } from "ai";
+import { streamText, convertToCoreMessages } from "ai";
 import { type NextRequest } from "next/server";
 import getServerUser from "@/hooks/get-server-user";
 import { rateLimit } from "@/lib/rate-limit";
@@ -17,11 +17,11 @@ export async function POST(req: NextRequest) {
         
           const userId = session?.id ?? guestId;
         
-          const { error } = rateLimit(userId, true, {
+          const { error } = await rateLimit(userId, {
             windowSize: 1 * 60 * 1000,
             maxRequests: 10,
             lockoutPeriod: 1 * 60 * 1000,
-          });
+          }, true, "CHAT");
         if (error) {
             return Response.json(
                 { error: "Rate limit exceeded. Please try again in a minute." },
@@ -68,7 +68,7 @@ if (messages.length > MAX_MESSAGES) {
             : context;
         const result =  streamText({
             model: google("models/gemini-1.5-flash"), 
-            messages: convertToModelMessages(messages),
+            messages: convertToCoreMessages(messages),
             system: `You are an assistant that only answers questions using the given context below. 
 If the answer isn't in the context, reply with "The information is not available in the provided content."
 Be concise and helpful in your responses.

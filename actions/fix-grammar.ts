@@ -109,11 +109,11 @@ export async function fixGrammar(text: string): Promise<GrammarFixResult> {
         const userId = session?.id ?? guestId;
 
         // Rate limiting
-        const { error: rateLimitError } = rateLimit(userId, true, {
+        const { error: rateLimitError } = await rateLimit(userId, {
             windowSize: VALIDATION.RATE_LIMIT.WINDOW_MS,
             maxRequests: VALIDATION.RATE_LIMIT.MAX_REQUESTS,
             lockoutPeriod: VALIDATION.RATE_LIMIT.LOCKOUT_MS,
-        });
+        }, true, "GRAMMAR");
 
         if (rateLimitError) {
             return fixGrammarError(rateLimitError);

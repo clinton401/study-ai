@@ -15,7 +15,7 @@ export const resetPassword = async (data: ResetPasswordFormData, userId: string,
     if (!result.success) return errorResponse(ERROR_MESSAGES.INVALID_FIELDS);
     try {
         const userId = await getOrCreateGuestId();
-        const { error } = rateLimit(userId, false);
+        const { error } = await rateLimit(userId, {}, false, "AUTH");
         if (error) return errorResponse(error);
         const { password } = result.data;
         await connectToDatabase();

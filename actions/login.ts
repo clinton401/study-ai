@@ -17,7 +17,7 @@ export const login = async (data: LoginFormData): Promise<{ error: string | null
         const result = loginSchema.safeParse(data);
         if (!result.success) return errorResponse(ERROR_MESSAGES.INVALID_FIELDS, { redirect: null });
         const userId = await getOrCreateGuestId();
-        const { error: rateLimitError } = rateLimit(userId, false);
+        const { error: rateLimitError } = await rateLimit(userId, {}, false, "AUTH");
         if (rateLimitError) return errorResponse(rateLimitError, { redirect: null });
         await connectToDatabase();
         const { email, password } = result.data;

@@ -19,7 +19,7 @@ export const sendPasswordResetCode = async (data: ForgotPasswordFormData, domain
     try {
         
         const guestId = await getOrCreateGuestId();
-        const { error } = rateLimit(guestId, false);
+        const { error } = await rateLimit(guestId, {}, false, "AUTH");
         if (error) return errorResponse(error);
         await connectToDatabase();
         const { email } = result.data;
