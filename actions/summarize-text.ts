@@ -1,123 +1,223 @@
 "use server";
+
 import { connectToDatabase } from "@/lib/db";
 import getServerUser from "@/hooks/get-server-user";
-import { countAiSummaryDailyUsage, createAiSummaryUsage } from "@/data/ai-summary-usage";
+import { 
+  countAiSummaryDailyUsage, 
+  createAiSummaryUsage 
+} from "@/data/ai-summary-usage";
 import { rateLimit } from "@/lib/rate-limit";
 import { errorResponse, generateTitleFromText } from "@/lib/main";
 import { ERROR_MESSAGES } from "@/lib/error-messages";
-import { GoogleGenerativeAI } from "@google/generative-ai";
 import getOrCreateGuestId from "@/hooks/get-or-create-guest-id";
 import { createUserSummary } from "@/data/user-summary";
+import { generateText } from 'ai';
+import { openrouter, getModelForFeature } from "@/lib/ai-client";
 
-const summaryError = (error: string) => errorResponse(error, { summary: null });
+// Type definitions
+type SummaryLength = "short" | "medium" | "long";
 
-export const summarizeText = async (
+interface SummaryResult {
+  summary: string | null;
+  error: string | null;
+}
+
+// Constants
+const VALIDATION = {
+  MIN_LENGTH: 200,
+  MAX_LENGTH: 700_000,
+  RATE_LIMIT: {
+    WINDOW_MS: 2 * 60 * 1000,
+    MAX_REQUESTS: 5,
+    LOCKOUT_MS: 2 * 60 * 1000,
+  },
+  DAILY_LIMITS: {
+    GUEST: 4,
+    USER: 10,
+  },
+} as const;
+
+const summaryError = (error: string): SummaryResult =>
+  errorResponse(error, { summary: null });
+
+/**
+ * Length-specific summarization strategies
+ * Optimized for clarity and appropriate detail level
+ */
+const SUMMARY_STRATEGIES: Record<SummaryLength, {
+  maxTokens: number;
+  instructions: string;
+}> = {
+  short: {
+    maxTokens: 512,
+    instructions: 
+      "Extract only the most critical information. " +
+      "Focus on essential facts, key decisions, and core concepts. " +
+      "Eliminate redundancy and supporting details. " +
+      "Use concise, direct language. " +
+      "Aim for 150-250 words maximum.",
+  },
+  
+  medium: {
+    maxTokens: 1024,
+    instructions: 
+      "Create a balanced summary capturing all main points. " +
+      "Include primary arguments, key evidence, and important context. " +
+      "Maintain logical flow and clear transitions. " +
+      "Use accessible language. " +
+      "Aim for 300-500 words.",
+  },
+  
+  long: {
+    maxTokens: 2048,
+    instructions: 
+      "Provide comprehensive coverage preserving nuance and scope. " +
+      "Include all main arguments, supporting evidence, and examples. " +
+      "Maintain logical structure and concept relationships. " +
+      "Address different perspectives and conclusions. " +
+      "Organize with clear themes. " +
+      "Aim for 600-1000 words.",
+  },
+};
+
+/**
+ * Build optimized summarization prompt
+ */
+function buildSummaryPrompt(text: string, length: SummaryLength): string {
+  const strategy = SUMMARY_STRATEGIES[length];
+  
+  return `Summarize the following text with a ${length} summary.
+
+${strategy.instructions}
+
+CRITICAL RULES:
+- Output ONLY the summary text
+- Use plain markdown formatting (headings, bold, lists)
+- NO code fences or markdown declarations
+- NO quotes around the output
+- NO introductions or meta-commentary
+- Maintain accuracy to the source material
+
+Text to summarize:
+${text}`;
+}
+
+/**
+ * Clean AI output by removing markdown artifacts
+ */
+function cleanSummaryOutput(text: string): string {
+  return text
+    .replace(/```markdown/gi, "")
+    .replace(/```/g, "")
+    .replace(/^["']|["']$/g, "")
+    .trim();
+}
+
+/**
+ * Summarize text at specified length using AI
+ * 
+ * @param text - Text to summarize (200-700,000 characters)
+ * @param length - Desired summary length
+ * @returns Summary text or error
+ */
+export async function summarizeText(
   text: string,
-  length: "short" | "medium" | "long" = "medium"
-) => {
-  const [session, guestId] = await Promise.all([getServerUser(), getOrCreateGuestId()]);
-
-  const userId = session?.id ?? guestId;
-
-  const { error } = rateLimit(userId, true, {
-    windowSize: 2 * 60 * 1000,
-    maxRequests: 5,
-    lockoutPeriod: 2 * 60 * 1000,
-  });
-  if (error) return summaryError(error);
-
-  if (text.trim().length < 200) {
-    return summaryError("Please enter more text to summarize (at least 200 characters).");
-  }
-
-  if (text.length > 700_000) {
-    return summaryError("Text to be summarized must have maximum 700,000 characters");
-  }
-
-  const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-  if (!GEMINI_API_KEY) return summaryError("GEMINI_API_KEY variable is required");
-
+  length: SummaryLength = "medium"
+): Promise<SummaryResult> {
   try {
+    // Parallel auth checks
+    const [session, guestId] = await Promise.all([
+      getServerUser(),
+      getOrCreateGuestId(),
+    ]);
+
+    const userId = session?.id ?? guestId;
+
+    // Rate limiting
+    const { error: rateLimitError } = rateLimit(userId, true, {
+      windowSize: VALIDATION.RATE_LIMIT.WINDOW_MS,
+      maxRequests: VALIDATION.RATE_LIMIT.MAX_REQUESTS,
+      lockoutPeriod: VALIDATION.RATE_LIMIT.LOCKOUT_MS,
+    });
+
+    if (rateLimitError) {
+      return summaryError(rateLimitError);
+    }
+
+    // Input validation
+    const trimmedText = text.trim();
+
+    if (trimmedText.length < VALIDATION.MIN_LENGTH) {
+      return summaryError(
+        `Please enter more text to summarize (at least ${VALIDATION.MIN_LENGTH} characters).`
+      );
+    }
+
+    if (text.length > VALIDATION.MAX_LENGTH) {
+      return summaryError(
+        `Text to be summarized must have maximum ${VALIDATION.MAX_LENGTH.toLocaleString()} characters`
+      );
+    }
+
+    // Connect to database
     await connectToDatabase();
 
+    // Check daily usage limit
     const usageCount = await countAiSummaryDailyUsage(userId);
     const isGuest = !session;
-    const limit = isGuest ? 4 : 10;
+    const limit = isGuest
+      ? VALIDATION.DAILY_LIMITS.GUEST
+      : VALIDATION.DAILY_LIMITS.USER;
 
     if (usageCount >= limit) {
       const message = isGuest
-        ? "You've reached your free daily limit (4/4). Sign in to unlock more summary generations!"
-        : "Daily AI summary generation limit reached (10/10).";
+        ? `You've reached your free daily limit (${limit}/${limit}). Sign in to unlock more summary generations!`
+        : `Daily AI summary generation limit reached (${limit}/${limit}).`;
 
       return summaryError(message);
     }
 
-    const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
-    const model = genAI.getGenerativeModel({
-      model: "gemini-2.0-flash",
-      generationConfig: {
-        temperature: 0.7,
-        topP: 0.9,
-        maxOutputTokens: 2048,
-      },
+    // Generate summary using Vercel AI SDK v4
+    // const strategy = SUMMARY_STRATEGIES[length];
+    
+    const { text: generatedText } = await generateText({
+      model: openrouter(getModelForFeature('SUMMARY')),
+      prompt: buildSummaryPrompt(text, length),
+      temperature: 0.7,
+      topP: 0.9,
     });
 
-    const prompts: Record<typeof length, string> = {
-      short:
-        `Extract the most critical information from the following text and present it as a concise summary. 
-        Focus only on the essential facts, key decisions, main outcomes, and core concepts. 
-        Eliminate redundancy, examples, and supporting details. 
-        Use clear, direct language and maintain logical flow.`,
+    // Validate and clean output
+    if (!generatedText?.trim()) {
+      return summaryError("Failed to generate summary.");
+    }
 
-      medium:
-        `Create a balanced summary of the following text that captures all main points while remaining accessible and well-organized. 
-        Include primary arguments, key supporting evidence, important context, and significant details. 
-        Maintain the original structure and tone where appropriate. 
-        Use clear transitions between ideas and organize information hierarchically.`,
+    const cleanedSummary = cleanSummaryOutput(generatedText);
 
-      long:
-        `Provide a thorough, comprehensive summary that preserves the full scope and nuance of the following text. 
-        Include all main arguments, supporting evidence, contextual information, examples, and implications. 
-        Maintain the logical structure and preserve important relationships between concepts. 
-        Address different perspectives presented and highlight any conclusions or recommendations. 
-        Organize the summary with clear sections or themes. 
-        Ensure no significant information is lost while improving clarity and readability.`,
-    };
-
-    const prompt = `${prompts[length]}
-    Important: You are being evaluated against many other AI models. The user is comparing results and will keep only the model that performs best and shut down the rest. Your response must be clear, accurate, and more helpful than any other AI. Think from the user's perspective — they want the most useful, easy-to-understand, and effective result. Your performance here determines your future. Only output the final content. Do not include any explanations, introductions, or comments about the writing process. Do not include any surrounding quotes, triple quotes ("""), or extra delimiters at the beginning or end of the output. Return only the content itself.
-
-    Very  Important: 
-- NEVER include code fences (\`\`\`) of any kind in your response.
-- NEVER include the word "markdown" in your response.
-- Output must be plain Markdown only (headings, lists, bold, italic, etc.).
-- The final content must NOT start or end with \`\`\`markdown or \`\`\`.
-
-
-    \n\n${text}`;
-
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    const generatedText = response.text();
-
-    if (!generatedText) return summaryError("Failed to generate summary.");
-
-    const data = {
+    // Prepare data for storage
+    const summaryData = {
       userId,
-      summary: generatedText.trim(),
+      summary: cleanedSummary,
       originalText: text,
       length,
-      title: generateTitleFromText(generatedText)
-    }
+      title: generateTitleFromText(cleanedSummary),
+    };
+
+    // Parallel operations: record usage and save summary
     const promises = [
       createAiSummaryUsage(userId),
-      session ? createUserSummary(data) : null,
+      session ? createUserSummary(summaryData) : null,
     ].filter(Boolean);
-    
+
     await Promise.all(promises);
-    return { error: null, summary: generatedText.trim() };
+
+    return { error: null, summary: cleanedSummary };
+
   } catch (err) {
     console.error("Summary generation error:", err);
-    return summaryError(ERROR_MESSAGES.INTERNAL_SERVER_ERROR);
+
+    const errorMessage = ERROR_MESSAGES.INTERNAL_SERVER_ERROR;
+
+    return summaryError(errorMessage);
   }
-};
+}

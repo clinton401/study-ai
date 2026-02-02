@@ -21,7 +21,7 @@ import createToast from "@/hooks/create-toast";
 import { ERROR_MESSAGES } from "@/lib/error-messages";
 import { fixGrammar } from "@/actions/fix-grammar";
 import { CopyExport } from "./copy-exports";
-import {WritingEditor} from "@/components/writing-editor"
+// import {WritingEditor} from "@/components/writing-editor"
 
 const toneOptions = [
   { value: "formal", label: "Formal", icon: Briefcase },
@@ -206,7 +206,7 @@ export function WritingCompanionClient() {
         </div>
       </section> */}
 
-      <WritingEditor />
+      {/* <WritingEditor /> */}
 
       <section className="pb-20 px-4">
         <div className="max-w-7xl mx-auto">

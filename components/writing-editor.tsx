@@ -1,35 +1,30 @@
 "use client";
 
-import { useState } from "react";
-import dynamic from "next/dynamic";
-import MarkdownIt from "markdown-it";
+import { useState, ChangeEvent } from "react";
 
-// Dynamically import so it only runs on the client
-const MdEditor = dynamic(() => import("react-markdown-editor-lite"), {
-  ssr: false,
-});
+export function WritingEditor() {
+  const [content, setContent] = useState<string>("");
 
-import "react-markdown-editor-lite/lib/index.css";
-
-const mdParser = new MarkdownIt();
-
-export  function WritingEditor() {
-  const [content, setContent] = useState("");
-
-  const handleEditorChange = ({ html, text }: { html: string; text: string }) => {
-    console.log("HTML output:", html);
-    console.log("Markdown text:", text);
+  const handleChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
+    const text = e.target.value;
+    // Keeping track for debugging as you did before
+    console.log("Current Content:", text);
     setContent(text);
   };
 
   return (
-    <div className=" bg-card mx-auto p-4">
-      <MdEditor
+    <div className="bg-card mx-auto p-4 w-full">
+      <textarea
         value={content}
-        style={{ height: "500px" }}
-        renderHTML={(text) => mdParser.render(text)}
-        onChange={handleEditorChange}
+        onChange={handleChange}
+        placeholder="Start writing your summary or notes here..."
+        className="w-full h-[500px] p-4 text-sm font-sans bg-background border border-input rounded-md 
+                   focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent 
+                   resize-none transition-all duration-200"
       />
+      <div className="mt-2 text-xs text-muted-foreground text-right">
+        Character count: {content.length}
+      </div>
     </div>
   );
 }

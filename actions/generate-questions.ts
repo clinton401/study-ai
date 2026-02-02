@@ -1,87 +1,74 @@
 "use server";
+
 import { connectToDatabase } from "@/lib/db";
 import getServerUser from "@/hooks/get-server-user";
 import { rateLimit } from "@/lib/rate-limit";
 import { errorResponse } from "@/lib/main";
 import { ERROR_MESSAGES } from "@/lib/error-messages";
-import { GoogleGenerativeAI } from "@google/generative-ai";
 import getOrCreateGuestId from "@/hooks/get-or-create-guest-id";
-import { countAiQuestionsDailyUsage, createAiQuestionsUsage } from "@/data/ai-questions-usage";
+import { 
+  countAiQuestionsDailyUsage, 
+  createAiQuestionsUsage 
+} from "@/data/ai-questions-usage";
 import { createUserQuestions } from "@/data/user-questions";
+import { generateText } from 'ai';
+import { openrouter, getModelForFeature } from "@/lib/ai-client";
+
+// Type definitions
 interface Question {
-    id: number;
-    question: string;
-    options: string[];
-    correctAnswer: number;
+  id: number;
+  question: string;
+  options: string[];
+  correctAnswer: number;
 }
 
-function validateQuestions(data: Question[]): data is Question[] {
-    if (!Array.isArray(data)) return false;
-
-    return data.every((q, index) =>
-        typeof q.id === "number" &&
-        q.id === index + 1 &&
-        typeof q.question === "string" &&
-        Array.isArray(q.options) &&
-        q.options.length === 4 &&
-        q.options.every(opt => typeof opt === "string") &&
-        typeof q.correctAnswer === "number" &&
-        q.correctAnswer >= 0 &&
-        q.correctAnswer < q.options.length
-    );
+interface GenerateQuestionsResult {
+  questions: Question[] | null;
+  error: string | null;
 }
-const questionError = (error: string) => errorResponse(error, { questions: null });
 
-export const generateQuestions = async (
-    text: string,
-    count: number = 25
-) => {
-    const [session, guestId] = await Promise.all([getServerUser(), getOrCreateGuestId()]);
-    const userId = session?.id ?? guestId;
+// Constants
+const VALIDATION = {
+  MIN_LENGTH: 200,
+  MAX_LENGTH: 700_000,
+  RATE_LIMIT: {
+    WINDOW_MS: 2 * 60 * 1000,
+    MAX_REQUESTS: 5,
+    LOCKOUT_MS: 2 * 60 * 1000,
+  },
+  DAILY_LIMITS: {
+    GUEST: 4,
+    USER: 10,
+  },
+} as const;
 
-    const { error } = rateLimit(userId, true, {
-        windowSize: 2 * 60 * 1000,
-        maxRequests: 5,
-        lockoutPeriod: 2 * 60 * 1000,
-    });
-    if (error) return questionError(error);
+const questionError = (error: string): GenerateQuestionsResult => 
+  errorResponse(error, { questions: null });
 
-    if (text.trim().length < 200) {
-        return questionError("Please provide at least 200 characters of text to generate questions.");
-    }
- if (text.length > 700_000) {
-    return questionError("Text must have maximum 700,000 characters");
-  }
-    const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-    if (!GEMINI_API_KEY) return questionError("GEMINI_API_KEY variable is required");
+/**
+ * Validate question structure
+ */
+function validateQuestions(data: any): data is Question[] {
+  if (!Array.isArray(data)) return false;
 
-    try {
-        await connectToDatabase();
+  return data.every((q, index) =>
+    typeof q.id === "number" &&
+    q.id === index + 1 &&
+    typeof q.question === "string" &&
+    Array.isArray(q.options) &&
+    q.options.length === 4 &&
+    q.options.every((opt: string) => typeof opt === "string") &&
+    typeof q.correctAnswer === "number" &&
+    q.correctAnswer >= 0 &&
+    q.correctAnswer < q.options.length
+  );
+}
 
-        const usageCount = await countAiQuestionsDailyUsage(userId);
-        const isGuest = !session;
-        const limit = isGuest ? 4 : 10;
-
-        if (usageCount >= limit) {
-            const message = isGuest
-                ? "You've reached your free daily limit (4/4). Sign in to unlock more question generations!"
-                : "Daily AI question generation limit reached (10/10).";
-
-            return questionError(message);
-        }
-
-        const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
-        const model = genAI.getGenerativeModel({
-            model: "gemini-2.0-flash",
-            generationConfig: {
-                temperature: 0.7,
-                topP: 0.9,
-                maxOutputTokens: 2048,
-            },
-        });
-
-        const prompt = `
-Generate exactly ${count} multiple-choice practice questions from the following text.
+/**
+ * Build questions generation prompt
+ */
+function buildQuestionsPrompt(text: string, count: number): string {
+  return `Generate exactly ${count} multiple-choice practice questions from the following text.
 
 Output must be valid JSON only, in the following format:
 [
@@ -106,58 +93,136 @@ Important Rules:
 - "correctAnswer" must be the ZERO-BASED index (0–3) of the correct option in the "options" array.
 - Do NOT include explanations, introductions, comments, or code fences.
 - ONLY return valid JSON.
-- Questions generated should be random
+- Questions generated should be diverse and random
 
 Text to generate from:
 ${text}
 `;
+}
 
+/**
+ * Parse and validate questions from AI response
+ */
+function parseQuestions(responseText: string): Question[] | null {
+  try {
+    const cleanText = responseText
+      .replace(/```json/gi, "")
+      .replace(/```/g, "")
+      .trim();
 
-        const result = await model.generateContent(prompt);
-        const response = await result.response;
-        const generatedText = response.text();
+    const questions = JSON.parse(cleanText);
 
-        if (!generatedText) return { error: "Failed to generate questions." };
-
-        let questions: Question[] = [];
-        try {
-            const cleanText = generatedText
-                .replace(/```json/gi, "")
-                .replace(/```/g, "")
-                .trim();
-
-            questions = JSON.parse(cleanText);
-
-            if (!Array.isArray(questions)) {
-                return questionError("Invalid format: not an array");
-            }
-        } catch (err) {
-            console.error("Failed to parse questions JSON:", err, generatedText);
-            return { error: "Invalid JSON format from AI" };
-        }
-
-        if (!validateQuestions(questions)) {
-            console.error("Validation failed:", questions);
-            return { error: "Invalid question structure returned from AI" };
-        }
-
-        const data = {
-            userId,
-            questions,
-            originalText: text,
-            count,
-        };
-
-        const promises = [
-            createAiQuestionsUsage(userId),
-            session ? createUserQuestions(data) : null,
-        ].filter(Boolean);
-
-        await Promise.all(promises);
-
-        return { error: null, questions };
-    } catch (err) {
-        console.error("Question generation error:", err);
-        return questionError(ERROR_MESSAGES.INTERNAL_SERVER_ERROR);
+    if (!validateQuestions(questions)) {
+      console.error("Question validation failed:", questions);
+      return null;
     }
-};
+
+    return questions;
+  } catch (err) {
+    console.error("Failed to parse questions JSON:", err);
+    return null;
+  }
+}
+
+/**
+ * Generate practice questions from text using AI
+ * 
+ * @param text - Text to generate questions from (200-700,000 characters)
+ * @param count - Number of questions to generate (default: 25)
+ * @returns Array of questions or error
+ */
+export async function generateQuestions(
+  text: string,
+  count: number = 25
+): Promise<GenerateQuestionsResult> {
+  try {
+    // Parallel auth checks
+    const [session, guestId] = await Promise.all([
+      getServerUser(),
+      getOrCreateGuestId(),
+    ]);
+
+    const userId = session?.id ?? guestId;
+
+    // Rate limiting
+    const { error: rateLimitError } = rateLimit(userId, true, {
+      windowSize: VALIDATION.RATE_LIMIT.WINDOW_MS,
+      maxRequests: VALIDATION.RATE_LIMIT.MAX_REQUESTS,
+      lockoutPeriod: VALIDATION.RATE_LIMIT.LOCKOUT_MS,
+    });
+
+    if (rateLimitError) {
+      return questionError(rateLimitError);
+    }
+
+    // Input validation
+    const trimmedText = text.trim();
+
+    if (trimmedText.length < VALIDATION.MIN_LENGTH) {
+      return questionError(
+        `Please provide at least ${VALIDATION.MIN_LENGTH} characters of text to generate questions.`
+      );
+    }
+
+    if (text.length > VALIDATION.MAX_LENGTH) {
+      return questionError(
+        `Text must have maximum ${VALIDATION.MAX_LENGTH.toLocaleString()} characters`
+      );
+    }
+
+    // Connect to database
+    await connectToDatabase();
+
+    // Check daily usage limit
+    const usageCount = await countAiQuestionsDailyUsage(userId);
+    const isGuest = !session;
+    const limit = isGuest
+      ? VALIDATION.DAILY_LIMITS.GUEST
+      : VALIDATION.DAILY_LIMITS.USER;
+
+    if (usageCount >= limit) {
+      const message = isGuest
+        ? `You've reached your free daily limit (${limit}/${limit}). Sign in to unlock more question generations!`
+        : `Daily AI question generation limit reached (${limit}/${limit}).`;
+
+      return questionError(message);
+    }
+
+    // Generate questions using Vercel AI SDK v4
+    const { text: generatedText } = await generateText({
+      model: openrouter(getModelForFeature('QUESTIONS')),
+      prompt: buildQuestionsPrompt(text, count),
+      temperature: 0.7,
+      topP: 0.9,
+    });
+
+    // Parse and validate questions
+    const questions = parseQuestions(generatedText);
+
+    if (!questions) {
+      return questionError("Invalid question format returned from AI");
+    }
+
+    // Prepare data for storage
+    const questionsData = {
+      userId,
+      questions,
+      originalText: text,
+      count,
+    };
+
+    // Parallel operations: record usage and save questions
+    const promises = [
+      createAiQuestionsUsage(userId),
+      session ? createUserQuestions(questionsData) : null,
+    ].filter(Boolean);
+
+    await Promise.all(promises);
+
+    return { error: null, questions };
+
+  } catch (err) {
+    console.error("Question generation error:", err);
+    return questionError(ERROR_MESSAGES.INTERNAL_SERVER_ERROR);
+  }
+}
