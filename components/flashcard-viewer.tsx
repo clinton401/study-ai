@@ -1,204 +1,207 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import { ArrowLeft, ChevronLeft, ChevronRight, RotateCcw } from "lucide-react"
+import { useState } from "react";
+import { ArrowLeft, ChevronLeft, ChevronRight, RotateCcw, LayoutDashboard } from "lucide-react";
 import { FullUserFlashcard as FlashcardSet } from "@/models/user-flashcards-schema";
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { CopyExport } from "./copy-exports";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import {CollapsibleText} from "@/components/collapsible-text";
-
-// interface Flashcard {
-//   id: number
-//   front: string
-//   back: string
-// }
-
-// interface FlashcardSet {
-//   id: number
-//   originalText: string
-//   count: number
-//   createdAt: string
-//   flashcards: Flashcard[]
-// }
+import { CollapsibleText } from "@/components/collapsible-text";
+import { motion, AnimatePresence } from "framer-motion";
+import { cn } from "@/lib/utils";
 
 interface FlashcardViewerProps {
-  flashcardSet: FlashcardSet
-  onClose: () => void
+  flashcardSet: FlashcardSet;
+  onClose: () => void;
 }
 
 export function FlashcardViewer({ flashcardSet, onClose }: FlashcardViewerProps) {
-  const [currentCardIndex, setCurrentCardIndex] = React.useState(0)
-  const [isFlipped, setIsFlipped] = React.useState(false)
-  const [viewMode, setViewMode] = React.useState<"study" | "list">("study")
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [isFlipped, setIsFlipped] = useState(false);
+  const [viewMode, setViewMode] = useState<"study" | "list">("study");
 
-  const currentCard = flashcardSet.flashcards[currentCardIndex]
+  const card = flashcardSet.flashcards[currentIndex];
+  const total = flashcardSet.flashcards.length;
 
-  const handleNext = () => {
-    if (currentCardIndex < flashcardSet.flashcards.length - 1) {
-      setCurrentCardIndex(currentCardIndex + 1)
-      setIsFlipped(false)
-    }
-  }
+  const next = () => { if (currentIndex < total - 1) { setCurrentIndex(i => i + 1); setIsFlipped(false); } };
+  const prev = () => { if (currentIndex > 0) { setCurrentIndex(i => i - 1); setIsFlipped(false); } };
 
-  const handlePrevious = () => {
-    if (currentCardIndex > 0) {
-      setCurrentCardIndex(currentCardIndex - 1)
-      setIsFlipped(false)
-    }
-  }
-
-  const handleFlip = () => {
-    setIsFlipped(!isFlipped)
-  }
-
- 
   const flashcardContent = flashcardSet.flashcards
-      .map((card, index) => `${index + 1}. Q: ${card.front}\n   A: ${card.back}`)
-      .join("\n\n");
+    .map((c, i) => `${i + 1}. Q: ${c.front}\n   A: ${c.back}`)
+    .join("\n\n");
 
   return (
-    <div className="fixed inset-0 z-50 bg-background">
-      <div className="flex h-full flex-col">
-        {/* Header */}
-        <div className="flex items-center justify-between flex-wrap gap-4 border-b px-6 py-4">
-          <div className="flex items-center flex-wrap gap-4">
-            <Button variant="ghost" size="icon" onClick={onClose}>
+    <div className="fixed inset-0 z-50 bg-background flex flex-col">
+      {/* Header */}
+      <div className="shrink-0 border-b border-border/60 bg-background/95 backdrop-blur-sm px-4 sm:px-6 py-4">
+        <div className="flex items-center justify-between flex-wrap gap-3">
+          <div className="flex items-center gap-3 min-w-0">
+            <Button variant="ghost" size="icon" onClick={onClose} className="shrink-0 rounded-xl">
               <ArrowLeft className="h-4 w-4" />
             </Button>
-            <div>
-              <h1 className="text-xl font-semibold">Flashcard Set</h1>
-              <div className="flex items-center flex-wrap gap-2 mt-1">
-                <Badge className="bg-green-100 text-green-800">{flashcardSet.count} cards</Badge>
-                <span className="text-sm text-muted-foreground">
+            <div className="min-w-0">
+              <h1 className="text-base font-bold tracking-tight leading-none">Flashcard Set</h1>
+              <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+                <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-green-100 text-green-800 dark:bg-green-950/40 dark:text-green-300">
+                  {total} cards
+                </span>
+                <span className="text-xs text-muted-foreground tabular-nums">
                   {new Date(flashcardSet.createdAt).toLocaleDateString()}
                 </span>
               </div>
             </div>
           </div>
-          <div className="flex items-center flex-wrap gap-2">
-           
-                      <ToggleGroup
-  type="single"
-  value={viewMode}
-  onValueChange={(v) => v && setViewMode(v as "study" | "list")}
-  className="rounded-lg border p-1"
->
-  <ToggleGroupItem value="study" className="px-3">
-    Study Mode
-  </ToggleGroupItem>
-  <ToggleGroupItem value="list" className="px-3">
-    List View
-  </ToggleGroupItem>
-</ToggleGroup>
-                       <CopyExport
-              content={flashcardContent}
-              filename={flashcardSet.originalText.slice(0, 10)}
-            />
-            {/* <Button variant="outline" size="sm" onClick={handleCopy}>
-              <Copy className="h-4 w-4 mr-2" />
-              Copy
-            </Button>
-            <Button variant="outline" size="sm" onClick={handleDownload}>
-              <Download className="h-4 w-4 mr-2" />
-              Download
-            </Button>
-            <Button variant="outline" size="sm">
-              <Share2 className="h-4 w-4 mr-2" />
-              Share
-            </Button> */}
+          <div className="flex items-center gap-2 shrink-0 flex-wrap">
+            <ToggleGroup
+              type="single"
+              value={viewMode}
+              onValueChange={(v) => v && setViewMode(v as "study" | "list")}
+              className="rounded-xl border border-border p-1 h-8"
+            >
+              <ToggleGroupItem value="study" className="rounded-lg text-xs h-6 px-3">Study</ToggleGroupItem>
+              <ToggleGroupItem value="list"  className="rounded-lg text-xs h-6 px-3">List</ToggleGroupItem>
+            </ToggleGroup>
+            <CopyExport content={flashcardContent} filename={flashcardSet.originalText.slice(0, 20)} />
           </div>
         </div>
+      </div>
 
-        {/* Content */}
-        <div className="flex-1 overflow-hidden">
-          {viewMode === "study" ? (
-            <div className="flex flex-col items-center justify-center h-full p-6">
-              <div className="w-full max-w-2xl">
-                <div className="flex items-center flex-wrap gap-2 justify-between mb-4">
-                  <span className="text-sm text-muted-foreground">
-                    Card {currentCardIndex + 1} of {flashcardSet.flashcards.length}
-                  </span>
-                  <Button variant="outline" size="sm" onClick={() => setIsFlipped(false)}>
-                    <RotateCcw className="h-4 w-4 mr-2" />
-                    Reset
-                  </Button>
-                </div>
+      {/* Body */}
+      <div className="flex-1 overflow-hidden">
+        {viewMode === "study" ? (
+          /* ── Study mode ─────────────────────────────────────────────────── */
+          <div className="flex flex-col items-center justify-center h-full px-4 sm:px-6 py-8 gap-6">
+            {/* Progress */}
+            <div className="flex items-center justify-between w-full max-w-2xl">
+              <span className="text-xs text-muted-foreground tabular-nums">
+                {currentIndex + 1} / {total}
+              </span>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setIsFlipped(false)}
+                className="rounded-xl gap-1.5 text-xs h-7"
+              >
+                <RotateCcw className="h-3 w-3" /> Reset
+              </Button>
+            </div>
 
-                <Card className="min-h-[300px] cursor-pointer" onClick={handleFlip}>
-                  <CardContent className="flex items-center justify-center h-full p-8">
-                    <div className="text-center">
-                      <div className="text-sm text-muted-foreground mb-2">{isFlipped ? "Answer" : "Question"}</div>
-                      <div className="text-lg font-medium">{isFlipped ? currentCard.back : currentCard.front}</div>
-                      {!isFlipped && <div className="text-sm text-muted-foreground mt-4">Click to reveal answer</div>}
-                    </div>
-                  </CardContent>
-                </Card>
+            {/* Card */}
+            <div
+              onClick={() => setIsFlipped(!isFlipped)}
+              className="relative w-full max-w-2xl min-h-[260px] cursor-pointer select-none rounded-2xl border border-border bg-card shadow-sm flex flex-col items-center justify-center p-6 sm:p-10 text-center gap-4 hover:border-foreground/30 hover:shadow-md transition-all active:scale-[0.99]"
+            >
+              <span className={cn(
+                "absolute top-4 left-4 text-[11px] font-semibold uppercase tracking-widest px-2 py-0.5 rounded-md",
+                isFlipped ? "bg-foreground text-background" : "bg-muted text-muted-foreground"
+              )}>
+                {isFlipped ? "Answer" : "Question"}
+              </span>
 
-                <div className="flex items-center flex-wrap gap-2 justify-center mt-6">
-                  <Button variant="outline" onClick={handlePrevious} disabled={currentCardIndex === 0}>
-                    <ChevronLeft className="h-4 w-4 mr-2" />
-                    Previous
-                  </Button>
-                  <div className="flex flex-wrap gap-1">
-                    {flashcardSet.flashcards.map((_, index) => (
-                      <div
-                        key={index}
-                        className={`w-2 h-2 rounded-full ${index === currentCardIndex ? "bg-primary" : "bg-muted"}`}
-                      />
-                    ))}
-                  </div>
-                  <Button
-                    variant="outline"
-                    onClick={handleNext}
-                    disabled={currentCardIndex === flashcardSet.flashcards.length - 1}
-                  >
-                    Next
-                    <ChevronRight className="h-4 w-4 ml-2" />
-                  </Button>
-                </div>
+              <AnimatePresence mode="wait">
+                <motion.p
+                  key={isFlipped ? "back" : "front"}
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -8 }}
+                  transition={{ duration: 0.18 }}
+                  className="text-base font-medium leading-relaxed"
+                >
+                  {isFlipped ? card.back : card.front}
+                </motion.p>
+              </AnimatePresence>
+
+              <div className="absolute bottom-4 flex items-center gap-1.5 text-xs text-muted-foreground">
+                <RotateCcw className="h-3 w-3" /> Click to flip
               </div>
             </div>
-          ) : (
-            <ScrollArea className="h-full">
-              <div className="max-w-4xl mx-auto p-6">
-                <Card className="mb-6">
-                  <CardHeader>
-                    <CardTitle>Original Text</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <CollapsibleText text={flashcardSet.originalText} className="text-muted-foreground" />
-                    {/* <p className="text-muted-foreground">{flashcardSet.originalText}</p> */}
-                  </CardContent>
-                </Card>
 
-                <div className="space-y-4">
-                  {flashcardSet.flashcards.map((card, index) => (
-                    <Card key={card.id}>
-                      <CardHeader>
-                        <CardTitle className="text-lg">Card {index + 1}</CardTitle>
-                      </CardHeader>
-                      <CardContent className="space-y-4">
-                        <div>
-                          <div className="text-sm font-medium text-muted-foreground mb-1">Question</div>
-                          <div className="p-3 bg-muted rounded-md">{card.front}</div>
-                        </div>
-                        <div>
-                          <div className="text-sm font-medium text-muted-foreground mb-1">Answer</div>
-                          <div className="p-3 bg-green-50 text-primary border border-green-200 rounded-md">{card.back}</div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
+            {/* Controls */}
+            <div className="flex items-center justify-between w-full max-w-2xl gap-4">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={prev}
+                disabled={currentIndex === 0}
+                className="rounded-xl gap-1"
+              >
+                <ChevronLeft className="h-4 w-4" /> Prev
+              </Button>
+
+              <div className="flex items-center gap-1 flex-wrap justify-center flex-1 overflow-hidden">
+                {flashcardSet.flashcards.slice(0, 20).map((_, i) => (
+                  <button
+                    key={i}
+                    type="button"
+                    onClick={() => { setCurrentIndex(i); setIsFlipped(false); }}
+                    className={cn(
+                      "rounded-full transition-all shrink-0",
+                      i === currentIndex ? "w-4 h-2 bg-foreground" : "w-2 h-2 bg-muted hover:bg-muted-foreground/40"
+                    )}
+                  />
+                ))}
+              </div>
+
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={next}
+                disabled={currentIndex === total - 1}
+                className="rounded-xl gap-1"
+              >
+                Next <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        ) : (
+          /* ── List mode ──────────────────────────────────────────────────── */
+          <ScrollArea className="h-full">
+            <div className="max-w-3xl mx-auto px-4 sm:px-6 py-8 space-y-6">
+              {/* Original text */}
+              <div className="rounded-2xl border border-border bg-card shadow-sm overflow-hidden">
+                <div className="px-5 py-3 border-b border-border/60">
+                  <span className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+                    Original Text
+                  </span>
+                </div>
+                <div className="px-5 py-4">
+                  <CollapsibleText text={flashcardSet.originalText} className="text-sm text-muted-foreground leading-relaxed" />
                 </div>
               </div>
-            </ScrollArea>
-          )}
-        </div>
+
+              {/* Card list */}
+              <div className="space-y-3">
+                {flashcardSet.flashcards.map((fc, i) => (
+                  <div
+                    key={fc.id}
+                    className="rounded-2xl border border-border bg-card shadow-sm overflow-hidden"
+                  >
+                    <div className="flex items-center gap-3 px-5 py-3 border-b border-border/60">
+                      <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-foreground">
+                        <LayoutDashboard className="h-3 w-3 text-background" />
+                      </div>
+                      <span className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+                        Card {i + 1}
+                      </span>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 divide-y sm:divide-y-0 sm:divide-x divide-border/60">
+                      <div className="px-5 py-4 space-y-1">
+                        <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">Question</p>
+                        <p className="text-sm font-medium leading-snug">{fc.front}</p>
+                      </div>
+                      <div className="px-5 py-4 space-y-1 bg-green-50/50 dark:bg-green-950/10">
+                        <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">Answer</p>
+                        <p className="text-sm leading-snug text-green-700 dark:text-green-400">{fc.back}</p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </ScrollArea>
+        )}
       </div>
     </div>
-  )
+  );
 }

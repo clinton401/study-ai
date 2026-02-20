@@ -2,9 +2,9 @@
 
 import { connectToDatabase } from "@/lib/db";
 import getServerUser from "@/hooks/get-server-user";
-import { 
-  countAiGenerateContentDailyUsage, 
-  createAiGenerateContentUsage 
+import {
+  countAiGenerateContentDailyUsage,
+  createAiGenerateContentUsage
 } from "@/data/ai-generate-content-usage";
 import { rateLimit } from "@/lib/rate-limit";
 import { errorResponse } from "@/lib/main";
@@ -40,28 +40,49 @@ const VALIDATION = {
   },
 } as const;
 
-const generateContentError = (error: string): GenerateContentResult => 
+const generateContentError = (error: string): GenerateContentResult =>
   errorResponse(error, { content: null, id: null });
 
 /**
  * Get word/page count instructions based on content type and length
  */
-const wordOrPageCounts = (type: ContentType, len: Length): string => {
+const wordOrPageCounts = (
+  type: ContentType,
+  len: Length
+): { descriptor: string; hardTarget: string } => {
   if (type === "term-paper") {
-    const pages: Record<Length, string> = {
-      short: "1–5 pages worth of content",
-      medium: "6–10 pages worth of content",
-      long: "11–15 pages worth of content",
+    const map: Record<Length, { descriptor: string; hardTarget: string }> = {
+      short: {
+        descriptor: "1–5 pages",
+        hardTarget: "HARD TARGET: 500–2,500 words (≈500 words per page). Every section listed in the Table of Contents must be fully written. Do not stop until all sections have complete content.",
+      },
+      medium: {
+        descriptor: "6–10 pages",
+        hardTarget: "HARD TARGET: 3,000–5,000 words (≈500 words per page). Every section listed in the Table of Contents must be fully written. Do not stop until all sections have complete content.",
+      },
+      long: {
+        descriptor: "11–15 pages",
+        hardTarget: "HARD TARGET: 5,500–7,500 words (≈500 words per page). Every section listed in the Table of Contents must be fully written. Exceed this word count if needed — never truncate any section.",
+      },
     };
-    return pages[len];
-  } else {
-    const words: Record<Length, string> = {
-      short: "500–750 words",
-      medium: "750–1200 words",
-      long: "1200–2000 words",
-    };
-    return words[len];
+    return map[len];
   }
+
+  const map: Record<Length, { descriptor: string; hardTarget: string }> = {
+    short: {
+      descriptor: "500–750 words",
+      hardTarget: "HARD TARGET: 500–750 words. Stay within this range.",
+    },
+    medium: {
+      descriptor: "750–1,200 words",
+      hardTarget: "HARD TARGET: 750–1,200 words. Stay within this range.",
+    },
+    long: {
+      descriptor: "1,200–2,000 words",
+      hardTarget: "HARD TARGET: 1,200–2,000 words. Stay within this range.",
+    },
+  };
+  return map[len];
 };
 
 /**
@@ -77,22 +98,69 @@ const contentTypeInstructions: Record<ContentType, { structure: string; approach
     approach: "Write as if addressing a real person, with appropriate personal connection.",
   },
   "term-paper": {
-    structure: `Structure the paper with the following sections, and ensure *every* section is fully written out:
-1. Title Page
-2. Abstract
-3. Table of Contents
-4. Introduction
-5. Literature Review
-6. Methodology
-7. Analysis / Main Body
-8. Conclusion
-9. References
+    structure: `You are producing a complete, fully-written academic term paper. The output must follow this exact sequence:
 
-The output must always include **all** the sections listed above. Do not skip or cut off any section — especially the Conclusion and References — even if this means exceeding the requested length or word count.`,
-    approach: `Write in a formal academic tone with logical flow and real-world relevance. Use real-life examples or case studies if helpful.
-- Use a consistent citation style (APA, MLA, or Chicago — pick one and stick to it).
-- If the content is too long for a single generation, continue automatically until the entire paper is complete.
-- Prioritize *completeness* over brevity. Aim for 500 words per page. For a "long" paper, target 11–15 pages (5500–7500 words), but it's okay to exceed this if needed to cover all sections.`,
+─────────────────────────────────────
+PART 1 — TITLE PAGE
+─────────────────────────────────────
+Format it as:
+
+# [Paper Title]
+
+**Course:** [Course Name]
+**Student:** [Student Name]
+**Institution:** [Institution Name]
+**Date:** [Date]
+
+Leave placeholders in brackets — the student will fill them in.
+
+─────────────────────────────────────
+PART 2 — ABSTRACT
+─────────────────────────────────────
+Write a concise abstract (150–250 words) summarising the paper's purpose, approach, key findings, and conclusion.
+
+─────────────────────────────────────
+PART 3 — TABLE OF CONTENTS
+─────────────────────────────────────
+List every section and subsection you will write, with their numbers and page indicators.
+CRITICAL: This is a PROMISE. Every single entry you list here MUST have its full content written in Part 4. Do not list anything you will not write. Do not write anything not listed here.
+
+Format:
+1. Introduction .......................... 1
+2. [Topic-Derived Section] ............... 2
+   2.1 [Subsection] ...................... 2
+   2.2 [Subsection] ...................... 3
+3. [Topic-Derived Section] ............... 4
+...
+N. Conclusion ............................ X
+References ............................... X
+
+─────────────────────────────────────
+PART 4 — FULL PAPER BODY
+─────────────────────────────────────
+Write every section and subsection from the Table of Contents IN FULL, in order.
+
+RULES FOR PART 4:
+- Each section heading must match the Table of Contents EXACTLY (same title, same number)
+- Every section and every subsection must contain fully developed paragraphs — not bullet points, not placeholders, not "this section will discuss..."
+- Move to the next section only after the current one is completely written
+- The Conclusion must summarise key arguments and provide closing thoughts
+- The References section must list all cited sources in a consistent citation style (APA, MLA, or Chicago)
+- NEVER end the paper mid-section. If a section is started, it must be finished.
+
+SECTION STRUCTURE RULES:
+- Derive every section and subsection title from what THIS specific topic requires
+- Think about the topic's discipline, scope, and nature before deciding on sections
+- Only include Literature Review if the topic genuinely benefits from surveying prior research
+- Only include Methodology if the topic involves a research process or study design
+- For case studies, policy analyses, technical breakdowns, historical arguments, or philosophical topics — structure sections accordingly
+- The Table of Contents and paper body must mirror each other perfectly`,
+    approach: `Write in a formal academic tone with genuine depth and topic-specific insight.
+- Every paragraph must advance the argument or analysis of this specific topic — no generic filler
+- Use real-world examples, data, or case studies directly relevant to the topic
+- Pick one citation style (APA, MLA, or Chicago) and apply it consistently
+- Subsections must be substantive — each one needs at least 2–3 full paragraphs
+- Never summarise what you are about to write — just write it`,
   },
 };
 
@@ -127,77 +195,63 @@ function buildContentPrompt(
   tone: Tone,
   length: Length
 ): string {
-  const lengthDescriptor = wordOrPageCounts(contentType, length);
+  const { descriptor, hardTarget } = wordOrPageCounts(contentType, length);
   const toneDetail = toneInstructions[tone];
   const typeDetail = contentTypeInstructions[contentType];
 
-  return `Create a ${lengthDescriptor} ${tone} ${contentType} on "${topic}" that reads as if written by a thoughtful human.
+  return `You are writing a ${tone} ${contentType} on the following topic: "${topic}"
 
-Content Type: ${contentType.toUpperCase()}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+LENGTH REQUIREMENT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Requested size: ${descriptor}
+${hardTarget}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CONTENT TYPE: ${contentType.toUpperCase()}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ${typeDetail.structure}
+
 ${typeDetail.approach}
 
-Tone: ${tone.toUpperCase()}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+TONE: ${tone.toUpperCase()}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ${toneDetail.language}
 ${toneDetail.voice}
 
-Humanization Requirements:
-- Natural, varied sentence structures (mix short, medium, and long sentences)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+HUMANIZATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+- Natural, varied sentence structures — mix short, medium, and long sentences
 - Include personal insights, examples, or relatable references appropriate for ${tone} tone
-- Use transitions that feel conversational yet suit the ${tone} style
-- Balance ${tone} language with human authenticity
-- Add subtle imperfections that feel natural (not perfect AI writing)
-- Vary paragraph lengths organically
+- Transitions that feel organic, not mechanical
+- Varied paragraph lengths
 - ${tone === "casual" || tone === "friendly"
-    ? "Include occasional rhetorical questions or direct address to reader"
-    : "Maintain appropriate formality while showing human perspective"}
-- Show genuine voice and perspective within ${tone} boundaries
-- Avoid AI-like precision or overly mechanical formatting
-- Make it feel like a real person wrote this ${contentType} with care and thought
-- Natural sentence variety (avoid repetitive patterns)
-- Authentic voice that matches the ${tone} tone
-- Personal touches appropriate for ${tone} ${contentType}
-- Organic paragraph flow and transitions
-- Subtle imperfections that feel genuinely human
-- Engaging content that shows real thought and care
+      ? "Include occasional rhetorical questions or direct address to the reader"
+      : "Maintain appropriate formality while showing a genuine human perspective"}
+- Subtle imperfections that make the writing feel authored, not generated
+- Avoid repetitive sentence patterns or robotic transitions
 
-Markdown Formatting Guidelines:
-- Use Markdown formatting where appropriate to enhance clarity and readability.
-- Apply **bold** for emphasis, *italic* for nuance or tone.
-- Use headings (#, ##, ###) to structure sections where logical.
-- Only add formatting when it contributes to understanding — don't overuse it.
-- Do not include any surrounding quotes, triple quotes ("""), or extra delimiters at the beginning or end of the output. Return only the content itself.
-- Only use standard Markdown syntax (CommonMark + GitHub Flavored Markdown).
-- Do not include raw HTML tags (<b>, <div>, <span>, etc.).
-- Do not use inline CSS or custom directives (:::note, !!!tip, etc.).
-- Avoid using images, footnotes, tables, or checkboxes unless specified.
-- Use #, ##, etc. for headings, ** for bold, * for italic, and - or 1. for lists.
-- Don't wrap content in code blocks unless it's actual code.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+MARKDOWN RULES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+- Use **bold** for emphasis, *italic* for nuance or tone
+- Use headings (#, ##, ###) to delineate sections logically
+- Only format when it genuinely aids readability — do not over-format
+- Do NOT use raw HTML tags, inline CSS, or custom directives
+- Do NOT wrap output in code blocks unless it contains actual code
+- NEVER output \`\`\`markdown or \`\`\` fences — return clean Markdown only
+- NEVER write the word "markdown" anywhere in your response
+- Do not start or end output with quotation marks or triple quotes${contentType === "letter" ? `
 
-${contentType === "letter"
-    ? "Include appropriate letter formatting (greeting, body, closing)."
-    : ""}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+LETTER FORMATTING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+- Include appropriate greeting, body paragraphs, and closing
+- Format as a real letter addressed to a real recipient` : ""}
 
-${contentType === "term-paper" ? `
-Formatting Requirements for Term Paper:
-- Include a title page (title, name, date, institution)
-- Include a table of contents before the introduction
-- Label each section clearly using headings
-- Use numbered sections where applicable
-- Conclude with a clear summary of key points
-- End with a properly formatted references section (APA, MLA, or Chicago)
-- Use real-life references, studies, or data where relevant
-
-Important: You must always generate and complete all required sections (Title Page, Abstract, Table of Contents, Introduction, Literature Review, Methodology, Analysis, Conclusion, References). Never stop early — even if output is long or exceeds length estimates. If necessary, continue output in multiple parts. Do not omit or summarize remaining sections. Output all content, in full, every time.
-` : ""}
-
-Very Important: 
-- NEVER include code fences (\`\`\`) of any kind in your response.
-- NEVER include the word "markdown" in your response.
-- Output must be plain Markdown only (headings, lists, bold, italic, etc.).
-- The final content must NOT start or end with \`\`\`markdown or \`\`\`.
-
-Topic: ${topic}
+Topic: "${topic}"
 `;
 }
 
@@ -283,11 +337,17 @@ export async function generateContent(
     // Generate content using Vercel AI SDK v4
     const { text: generatedText } = await generateText({
       model: openrouter(getModelForFeature('CONTENT')),
-        system: `You are a professional academic writer. 
-           STRICT RULE: Do not include any introductory remarks, "Chain of Thought", internal monologue, or meta-commentary about how you will write the paper. 
-           DO NOT say things like "Okay, I will start by..." or "First, I'll...".
-           Output ONLY the final content in Markdown format. 
-           Start immediately with the Title Page or the content requested.`,
+      system: `You are a professional academic writer and subject-matter expert.
+
+YOUR ONLY JOB IS TO OUTPUT THE COMPLETE, FULLY-WRITTEN DOCUMENT — nothing else.
+
+ABSOLUTE RULES:
+1. Do NOT output any preamble, commentary, or explanation before the document starts.
+2. Do NOT say "I will now write...", "Here is the paper:", "Okay, let me...", or anything similar.
+3. For term papers: the Table of Contents is a PROMISE — every entry listed must be fully written in the paper body. Listing a section without writing it is a failure.
+4. Write every section completely before moving to the next. Never leave a section as a stub, placeholder, or summary of what it "will cover".
+5. Output clean Markdown only. No \`\`\` fences. No HTML. Never use the word "markdown".
+6. Begin your output with the first line of the document itself.`,
       prompt: buildContentPrompt(
         topic,
         contentType as ContentType,
@@ -324,10 +384,10 @@ export async function generateContent(
 
     const [, paper] = await Promise.all(promises);
 
-    return { 
-      content: cleanedContent, 
-      error: null, 
-      id: paper?._id?.toString() ?? null 
+    return {
+      content: cleanedContent,
+      error: null,
+      id: paper?._id?.toString() ?? null,
     };
 
   } catch (err) {

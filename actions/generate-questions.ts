@@ -6,15 +6,17 @@ import { rateLimit } from "@/lib/rate-limit";
 import { errorResponse } from "@/lib/main";
 import { ERROR_MESSAGES } from "@/lib/error-messages";
 import getOrCreateGuestId from "@/hooks/get-or-create-guest-id";
-import { 
-  countAiQuestionsDailyUsage, 
-  createAiQuestionsUsage 
+import {
+  countAiQuestionsDailyUsage,
+  createAiQuestionsUsage,
 } from "@/data/ai-questions-usage";
 import { createUserQuestions } from "@/data/user-questions";
-import { generateText } from 'ai';
+import { generateObject } from "ai";
 import { openrouter, getModelForFeature } from "@/lib/ai-client";
+import { z } from "zod";
 
-// Type definitions
+// ─── Types ────────────────────────────────────────────────────────────────────
+
 interface Question {
   id: number;
   question: string;
@@ -27,7 +29,29 @@ interface GenerateQuestionsResult {
   error: string | null;
 }
 
-// Constants
+// ─── Schema ───────────────────────────────────────────────────────────────────
+
+const questionsSchema = z.object({
+  questions: z.array(
+    z.object({
+      id: z.number().int().positive().describe(
+        "Sequential ID starting at 1, incrementing by 1 for each question."
+      ),
+      question: z.string().min(1).describe(
+        "A clear, unambiguous question about the source material."
+      ),
+      options: z.array(z.string().min(1)).length(4).describe(
+        "Exactly 4 unique answer options."
+      ),
+      correctAnswer: z.number().int().min(0).max(3).describe(
+        "Zero-based index (0–3) of the correct option in the options array."
+      ),
+    })
+  ).describe("Array of multiple-choice questions generated from the source text."),
+});
+
+// ─── Constants ────────────────────────────────────────────────────────────────
+
 const VALIDATION = {
   MIN_LENGTH: 200,
   MAX_LENGTH: 700_000,
@@ -42,94 +66,39 @@ const VALIDATION = {
   },
 } as const;
 
-const questionError = (error: string): GenerateQuestionsResult => 
+const questionError = (error: string): GenerateQuestionsResult =>
   errorResponse(error, { questions: null });
 
-/**
- * Validate question structure
- */
-function validateQuestions(data: any): data is Question[] {
-  if (!Array.isArray(data)) return false;
+// ─── Prompt ───────────────────────────────────────────────────────────────────
 
-  return data.every((q, index) =>
-    typeof q.id === "number" &&
-    q.id === index + 1 &&
-    typeof q.question === "string" &&
-    Array.isArray(q.options) &&
-    q.options.length === 4 &&
-    q.options.every((opt: string) => typeof opt === "string") &&
-    typeof q.correctAnswer === "number" &&
-    q.correctAnswer >= 0 &&
-    q.correctAnswer < q.options.length
-  );
-}
-
-/**
- * Build questions generation prompt
- */
 function buildQuestionsPrompt(text: string, count: number): string {
-  return `Generate exactly ${count} multiple-choice practice questions from the following text.
+  return `Generate exactly ${count} multiple-choice practice questions from the text below.
 
-Output must be valid JSON only, in the following format:
-[
-  {
-    "id": 1,
-    "question": "Your question here?",
-    "options": ["Option A", "Option B", "Option C", "Option D"],
-    "correctAnswer": 0
-  },
-  {
-    "id": 2,
-    "question": "Another question?",
-    "options": ["Option A", "Option B", "Option C", "Option D"],
-    "correctAnswer": 2
-  }
-]
+Rules:
+- Each question must have exactly 4 unique answer options
+- "correctAnswer" is the zero-based index (0, 1, 2, or 3) of the correct option
+- Questions must be clear and unambiguous
+- Distribute questions across different parts of the text — no clustering
+- Vary the difficulty: mix straightforward recall with conceptual understanding
+- Plausible distractors only — no obviously wrong options
+- IDs start at 1 and increment by 1
 
-Important Rules:
-- "id" starts at 1 and increments by 1 for each question.
-- "question" must be a clear question string.
-- "options" must always contain exactly 4 unique strings.
-- "correctAnswer" must be the ZERO-BASED index (0–3) of the correct option in the "options" array.
-- Do NOT include explanations, introductions, comments, or code fences.
-- ONLY return valid JSON.
-- Questions generated should be diverse and random
-
-Text to generate from:
+Source text:
+"""
 ${text}
-`;
+"""`;
 }
 
-/**
- * Parse and validate questions from AI response
- */
-function parseQuestions(responseText: string): Question[] | null {
-  try {
-    const cleanText = responseText
-      .replace(/```json/gi, "")
-      .replace(/```/g, "")
-      .trim();
-
-    const questions = JSON.parse(cleanText);
-
-    if (!validateQuestions(questions)) {
-      console.error("Question validation failed:", questions);
-      return null;
-    }
-
-    return questions;
-  } catch (err) {
-    console.error("Failed to parse questions JSON:", err);
-    return null;
-  }
-}
+// ─── Action ───────────────────────────────────────────────────────────────────
 
 /**
- * Generate practice questions from text using AI
- * 
- * @param text - Text to generate questions from (200-700,000 characters)
+ * Generate practice questions from text using AI with structured output.
+ *
+ * Uses generateObject + Zod schema — typed response, zero JSON parsing,
+ * schema-enforced option count and correctAnswer bounds.
+ *
+ * @param text  - Source text (200–700,000 characters)
  * @param count - Number of questions to generate (default: 25)
- * @returns Array of questions or error
  */
 export async function generateQuestions(
   text: string,
@@ -145,15 +114,18 @@ export async function generateQuestions(
     const userId = session?.id ?? guestId;
 
     // Rate limiting
-    const { error: rateLimitError } = await rateLimit(userId, {
-      windowSize: VALIDATION.RATE_LIMIT.WINDOW_MS,
-      maxRequests: VALIDATION.RATE_LIMIT.MAX_REQUESTS,
-      lockoutPeriod: VALIDATION.RATE_LIMIT.LOCKOUT_MS,
-    }, true, "QUESTIONS");
+    const { error: rateLimitError } = await rateLimit(
+      userId,
+      {
+        windowSize: VALIDATION.RATE_LIMIT.WINDOW_MS,
+        maxRequests: VALIDATION.RATE_LIMIT.MAX_REQUESTS,
+        lockoutPeriod: VALIDATION.RATE_LIMIT.LOCKOUT_MS,
+      },
+      true,
+      "QUESTIONS"
+    );
 
-    if (rateLimitError) {
-      return questionError(rateLimitError);
-    }
+    if (rateLimitError) return questionError(rateLimitError);
 
     // Input validation
     const trimmedText = text.trim();
@@ -166,7 +138,7 @@ export async function generateQuestions(
 
     if (text.length > VALIDATION.MAX_LENGTH) {
       return questionError(
-        `Text must have maximum ${VALIDATION.MAX_LENGTH.toLocaleString()} characters`
+        `Text must have a maximum of ${VALIDATION.MAX_LENGTH.toLocaleString()} characters.`
       );
     }
 
@@ -184,42 +156,43 @@ export async function generateQuestions(
       const message = isGuest
         ? `You've reached your free daily limit (${limit}/${limit}). Sign in to unlock more question generations!`
         : `Daily AI question generation limit reached (${limit}/${limit}).`;
-
       return questionError(message);
     }
 
-    // Generate questions using Vercel AI SDK v4
-    const { text: generatedText } = await generateText({
-      model: openrouter(getModelForFeature('QUESTIONS')),
+    // ── generateObject replaces generateText + parseQuestions ────────────────
+    const { object } = await generateObject({
+      model: openrouter(getModelForFeature("QUESTIONS")),
+      schema: questionsSchema,
       prompt: buildQuestionsPrompt(text, count),
       temperature: 0.7,
       topP: 0.9,
     });
 
-    // Parse and validate questions
-    const questions = parseQuestions(generatedText);
+    const questions = object.questions;
 
-    if (!questions) {
-      return questionError("Invalid question format returned from AI");
+    if (!questions.length) {
+      return questionError("No questions were generated. Please try again.");
     }
 
-    // Prepare data for storage
-    const questionsData = {
-      userId,
-      questions,
-      originalText: text,
-      count,
-    };
+    // Normalise IDs and trim strings in case of model drift
+    const normalised: Question[] = questions.map((q, i) => ({
+      id: i + 1,
+      question: q.question.trim(),
+      options: q.options.map((o) => o.trim()),
+      correctAnswer: q.correctAnswer,
+    }));
 
-    // Parallel operations: record usage and save questions
-    const promises = [
-      createAiQuestionsUsage(userId),
-      session ? createUserQuestions(questionsData) : null,
-    ].filter(Boolean);
+    // Parallel: record usage + persist (guests skip persistence)
+    await Promise.all(
+      [
+        createAiQuestionsUsage(userId),
+        session
+          ? createUserQuestions({ userId, questions: normalised, originalText: text, count })
+          : null,
+      ].filter(Boolean)
+    );
 
-    await Promise.all(promises);
-
-    return { error: null, questions };
+    return { error: null, questions: normalised };
 
   } catch (err) {
     console.error("Question generation error:", err);

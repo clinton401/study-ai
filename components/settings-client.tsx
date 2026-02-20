@@ -1,16 +1,33 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { motion } from "framer-motion"
-import { Settings, User, Mail, Lock, LogOut, Trash2, Check, Save, Loader2 } from "lucide-react"
-import { useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import {useRouter} from "next/navigation"
+import { useState } from "react";
+import { motion } from "framer-motion";
+import {
+  Settings,
+  User,
+  Mail,
+  Lock,
+  LogOut,
+  Trash2,
+  Check,
+  Save,
+  Loader2,
+  ShieldAlert,
+} from "lucide-react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { useRouter } from "next/navigation";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -21,7 +38,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
+} from "@/components/ui/alert-dialog";
 import {
   changeEmailSchema,
   changePasswordSchema,
@@ -33,508 +50,527 @@ import { deleteAccount } from "@/actions/delete-account";
 import { changeEmail } from "@/actions/change-email";
 import { updatePassword } from "@/actions/update-password";
 import createToast from "@/hooks/create-toast";
-
 import { signOut } from "next-auth/react";
+import { cn } from "@/lib/utils";
 
-export function SettingsClient({session}:  {session: SessionType}) {
-  const [isEmailLoading, setIsEmailLoading] = useState(false)
-  const [isDeleteLoading, setIsDeleteLoading] = useState(false)
-  const [isLogoutLoading, setIsLogoutLoading] = useState(false)
-  const [isPasswordLoading, setIsPasswordLoading] = useState(false)
-  const [emailSaveSuccess, setEmailSaveSuccess] = useState(false)
-  const [passwordSaveSuccess, setPasswordSaveSuccess] = useState(false)
+// ─── Section wrapper ──────────────────────────────────────────────────────────
+
+function Section({
+  icon: Icon,
+  title,
+  description,
+  children,
+}: {
+  icon: React.ElementType;
+  title: string;
+  description?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="rounded-2xl border border-border bg-card shadow-sm overflow-hidden">
+      {/* Section header */}
+      <div className="flex items-start gap-3 px-4 sm:px-8 py-5 border-b border-border/60">
+        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-foreground mt-0.5">
+          <Icon className="h-4 w-4 text-background" />
+        </div>
+        <div>
+          <h2 className="text-sm font-bold tracking-tight leading-none">{title}</h2>
+          {description && (
+            <p className="text-xs text-muted-foreground mt-1">{description}</p>
+          )}
+        </div>
+      </div>
+      {/* Section body */}
+      <div className="px-4 sm:px-8 py-6">{children}</div>
+    </div>
+  );
+}
+
+// ─── Field row ────────────────────────────────────────────────────────────────
+
+function ReadonlyField({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="space-y-1.5">
+      <Label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+        {label}
+      </Label>
+      <Input
+        value={value}
+        disabled
+        className="rounded-xl bg-muted/50 border-border text-sm"
+      />
+    </div>
+  );
+}
+
+// ─── Root error ───────────────────────────────────────────────────────────────
+
+function RootError({ message }: { message?: string }) {
+  if (!message) return null;
+  return (
+    <p className="text-xs text-destructive rounded-lg bg-destructive/10 border border-destructive/20 px-3 py-2">
+      {message}
+    </p>
+  );
+}
+
+// ─── Success note ─────────────────────────────────────────────────────────────
+
+function SuccessNote({ message }: { message: string }) {
+  return (
+    <motion.p
+      initial={{ opacity: 0, y: -4 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="text-xs text-green-700 dark:text-green-400 rounded-lg bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800 px-3 py-2"
+    >
+      {message}
+    </motion.p>
+  );
+}
+
+// ─── Main component ───────────────────────────────────────────────────────────
+
+export function SettingsClient({ session }: { session: SessionType }) {
+  const [isEmailLoading, setIsEmailLoading] = useState(false);
+  const [isDeleteLoading, setIsDeleteLoading] = useState(false);
+  const [isLogoutLoading, setIsLogoutLoading] = useState(false);
+  const [isPasswordLoading, setIsPasswordLoading] = useState(false);
+  const [emailSaveSuccess, setEmailSaveSuccess] = useState(false);
+  const [passwordSaveSuccess, setPasswordSaveSuccess] = useState(false);
 
   const { createError, createSimple } = createToast();
-  const {refresh} = useRouter();
-  
-  const userData = {
-    name: session.name,
-    email: session.email,
-  }
+  const { refresh } = useRouter();
 
-  // Email form
+  // ── Forms ──────────────────────────────────────────────────────────────────
+
   const emailForm = useForm<ChangeEmailFormData>({
     resolver: zodResolver(changeEmailSchema),
-    defaultValues: {
-      newEmail: "",
-      confirmEmail: "",
-    },
-  })
+    defaultValues: { newEmail: "", confirmEmail: "" },
+  });
 
-  // Password form
   const passwordForm = useForm<ChangePasswordFormData>({
     resolver: zodResolver(changePasswordSchema),
-    defaultValues: {
-      currentPassword: "",
-      newPassword: "",
-      confirmPassword: "",
-    },
-  })
+    defaultValues: { currentPassword: "", newPassword: "", confirmPassword: "" },
+  });
+
+  // ── Handlers ───────────────────────────────────────────────────────────────
 
   const handleChangeEmail = async (data: ChangeEmailFormData) => {
-    setIsEmailLoading(true)
+    setIsEmailLoading(true);
     try {
-      const {error} = await changeEmail(data);
-      if(error){
-        
-      emailForm.setError("root", { message: error});
-      return;
-      }
-
-      setEmailSaveSuccess(true)
-      emailForm.reset()
-      setTimeout(() => setEmailSaveSuccess(false), 3000)
+      const { error } = await changeEmail(data);
+      if (error) { emailForm.setError("root", { message: error }); return; }
+      setEmailSaveSuccess(true);
+      emailForm.reset();
+      setTimeout(() => setEmailSaveSuccess(false), 3000);
       refresh();
-    } catch (error) {
-      console.error("Failed to change email:", error)
-      emailForm.setError("root", { message: "Failed to update email. Please try again." })
+    } catch {
+      emailForm.setError("root", { message: "Failed to update email. Please try again." });
     } finally {
-      setIsEmailLoading(false)
+      setIsEmailLoading(false);
     }
-  }
+  };
 
   const handleChangePassword = async (data: ChangePasswordFormData) => {
-    setIsPasswordLoading(true)
+    setIsPasswordLoading(true);
     try {
-      const {error} = await updatePassword(data);
-      if(error){
-        
-      passwordForm.setError("root", { message: error });
-      return;
-      }
-      setPasswordSaveSuccess(true)
-      passwordForm.reset()
-      setTimeout(() => setPasswordSaveSuccess(false), 3000)
-    } catch (error) {
-      console.error("Failed to change password:", error)
-      passwordForm.setError("root", { message: "Failed to update password. Please try again." })
+      const { error } = await updatePassword(data);
+      if (error) { passwordForm.setError("root", { message: error }); return; }
+      setPasswordSaveSuccess(true);
+      passwordForm.reset();
+      setTimeout(() => setPasswordSaveSuccess(false), 3000);
+    } catch {
+      passwordForm.setError("root", { message: "Failed to update password. Please try again." });
     } finally {
-      setIsPasswordLoading(false)
+      setIsPasswordLoading(false);
     }
-  }
+  };
 
-  const handleLogout = async() => {
+  const handleLogout = async () => {
     if (isLogoutLoading || isDeleteLoading) return;
     try {
-      setIsLogoutLoading(true)
+      setIsLogoutLoading(true);
       await signOut();
-      createSimple("You have logged out successfully.");
-          window.location.href="/login";
-    } catch (error) {
-      console.error(`Unable to logout: ${error}`);
-      createError("There was a problem trying to logout");
+      createSimple("You have been signed out.");
+      window.location.href = "/login";
+    } catch {
+      createError("There was a problem signing out.");
     } finally {
-      setIsLogoutLoading(false)
+      setIsLogoutLoading(false);
     }
-  }
+  };
 
-  const handleDeleteAccount = async() => {
+  const handleDeleteAccount = async () => {
     if (isLogoutLoading || isDeleteLoading) return;
     try {
-      setIsDeleteLoading(true)
-      const {error} = await deleteAccount();
-      if(error)return createError(error);
+      setIsDeleteLoading(true);
+      const { error } = await deleteAccount();
+      if (error) return createError(error);
       await signOut();
       createSimple("Account deleted successfully.");
-          window.location.href="/login";
-    } catch (error) {
-      console.error(`Unable to delete account: ${error}`);
-      createError("There was a problem trying to delete account");
+      window.location.href = "/login";
+    } catch {
+      createError("There was a problem deleting your account.");
     } finally {
-      setIsDeleteLoading(false)
+      setIsDeleteLoading(false);
     }
-  }
+  };
+
+  const isBusy = isLogoutLoading || isDeleteLoading;
+
+  // ── Render ─────────────────────────────────────────────────────────────────
 
   return (
-    <>
-      {/* Hero Section */}
-      <section className="pt-32 pb-12 px-4">
-        <div className="max-w-4xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
+    <div className="min-h-screen bg-background overflow-x-hidden">
+      {/* Header */}
+      <header className="">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 py-4 flex items-center gap-3">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-foreground">
+            <Settings className="h-4 w-4 text-background" />
+          </div>
+          <div>
+            <h1 className="text-sm font-bold tracking-tight leading-none">Settings</h1>
+            <p className="text-xs text-muted-foreground mt-0.5">Manage your account</p>
+          </div>
+        </div>
+      </header>
+
+      <main className="max-w-5xl mx-auto px-4 sm:px-6 py-10 space-y-6">
+        {/* Hero */}
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+          className="space-y-1"
+        >
+          <h2 className="text-4xl font-bold tracking-tight">Account Settings</h2>
+          <p className="text-muted-foreground text-lg">
+            Update your email, password, and account preferences.
+          </p>
+        </motion.div>
+
+        {/* ── Account Information ─────────────────────────────────────────── */}
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.06 }}
+        >
+          <Section
+            icon={User}
+            title="Account Information"
+            description="Your current account details — read only."
           >
-            <div className="flex items-center space-x-4 mb-6">
-              <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-3 rounded-2xl">
-                <Settings className="h-8 w-8 text-white" />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <ReadonlyField label="Name" value={session.name ?? ""} />
+              <ReadonlyField label="Email" value={session.email ?? ""} />
+            </div>
+          </Section>
+        </motion.div>
+
+        {/* ── Change Email ────────────────────────────────────────────────── */}
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.1 }}
+        >
+          <Section
+            icon={Mail}
+            title="Change Email Address"
+            description="Your new email will be used to sign in going forward."
+          >
+            <Form {...emailForm}>
+              <form
+                onSubmit={emailForm.handleSubmit(handleChangeEmail)}
+                className="space-y-5"
+              >
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <FormField
+                    control={emailForm.control}
+                    name="newEmail"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                          New Email
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            type="email"
+                            placeholder="you@example.com"
+                            className="rounded-xl text-sm focus-visible:ring-1 focus-visible:ring-foreground focus-visible:border-foreground"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage className="text-xs" />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={emailForm.control}
+                    name="confirmEmail"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                          Confirm Email
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            type="email"
+                            placeholder="Confirm new email"
+                            className="rounded-xl text-sm focus-visible:ring-1 focus-visible:ring-foreground focus-visible:border-foreground"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage className="text-xs" />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                <RootError message={emailForm.formState.errors.root?.message} />
+                {emailSaveSuccess && <SuccessNote message="Email updated successfully." />}
+
+                <Button
+                  type="submit"
+                  disabled={isEmailLoading}
+                  size="sm"
+                  className="rounded-xl gap-1.5"
+                >
+                  {isEmailLoading ? (
+                    <><Loader2 className="h-3.5 w-3.5 animate-spin" /> Updating…</>
+                  ) : emailSaveSuccess ? (
+                    <><Check className="h-3.5 w-3.5" /> Updated</>
+                  ) : (
+                    <><Save className="h-3.5 w-3.5" /> Update Email</>
+                  )}
+                </Button>
+              </form>
+            </Form>
+          </Section>
+        </motion.div>
+
+        {/* ── Change Password ─────────────────────────────────────────────── */}
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.14 }}
+        >
+          <Section
+            icon={Lock}
+            title="Change Password"
+            description="Choose a strong password you don't use elsewhere."
+          >
+            <Form {...passwordForm}>
+              <form
+                onSubmit={passwordForm.handleSubmit(handleChangePassword)}
+                className="space-y-5"
+              >
+                <FormField
+                  control={passwordForm.control}
+                  name="currentPassword"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                        Current Password
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          type="password"
+                          placeholder="Enter current password"
+                          className="rounded-xl text-sm focus-visible:ring-1 focus-visible:ring-foreground focus-visible:border-foreground"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage className="text-xs" />
+                    </FormItem>
+                  )}
+                />
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <FormField
+                    control={passwordForm.control}
+                    name="newPassword"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                          New Password
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            type="password"
+                            placeholder="Enter new password"
+                            className="rounded-xl text-sm focus-visible:ring-1 focus-visible:ring-foreground focus-visible:border-foreground"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage className="text-xs" />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={passwordForm.control}
+                    name="confirmPassword"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                          Confirm Password
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            type="password"
+                            placeholder="Confirm new password"
+                            className="rounded-xl text-sm focus-visible:ring-1 focus-visible:ring-foreground focus-visible:border-foreground"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage className="text-xs" />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                <RootError message={passwordForm.formState.errors.root?.message} />
+                {passwordSaveSuccess && <SuccessNote message="Password updated successfully." />}
+
+                <Button
+                  type="submit"
+                  disabled={isPasswordLoading}
+                  size="sm"
+                  className="rounded-xl gap-1.5"
+                >
+                  {isPasswordLoading ? (
+                    <><Loader2 className="h-3.5 w-3.5 animate-spin" /> Updating…</>
+                  ) : passwordSaveSuccess ? (
+                    <><Check className="h-3.5 w-3.5" /> Updated</>
+                  ) : (
+                    <><Save className="h-3.5 w-3.5" /> Update Password</>
+                  )}
+                </Button>
+              </form>
+            </Form>
+          </Section>
+        </motion.div>
+
+        {/* ── Danger Zone ─────────────────────────────────────────────────── */}
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.18 }}
+        >
+          <div className="rounded-2xl border border-destructive/30 bg-card shadow-sm overflow-hidden">
+            {/* Header */}
+            <div className="flex items-start gap-3 px-4 sm:px-8 py-5 border-b border-destructive/20 bg-destructive/5">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-destructive mt-0.5">
+                <ShieldAlert className="h-4 w-4 text-destructive-foreground" />
               </div>
               <div>
-                <h1 className="text-4xl md:text-5xl font-bold text-gray-800 dark:text-gray-200">
-                  Settings
-                </h1>
-                <p className="text-xl text-gray-600 dark:text-gray-300 mt-2">
-                  Manage your account settings
+                <h2 className="text-sm font-bold tracking-tight leading-none text-destructive">
+                  Danger Zone
+                </h2>
+                <p className="text-xs text-muted-foreground mt-1">
+                  These actions are permanent and cannot be undone.
                 </p>
               </div>
             </div>
-          </motion.div>
-        </div>
-      </section>
 
-      {/* Settings Content */}
-      <section className="pb-20 px-4">
-        <div className="max-w-4xl mx-auto space-y-8">
-          {/* User Information */}
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.1 }}
-          >
-            <Card className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-0 shadow-xl rounded-3xl">
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <User className="h-6 w-6 text-blue-600" />
-                  <span>Account Information</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label>Name</Label>
-                    <Input
-                      value={userData.name}
-                      disabled
-                      className="rounded-xl bg-gray-50 dark:bg-gray-700"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Email</Label>
-                    <Input
-                      value={userData.email}
-                      disabled
-                      className="rounded-xl bg-gray-50 dark:bg-gray-700"
-                    />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-
-          {/* Change Email */}
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-          >
-            <Card className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-0 shadow-xl rounded-3xl">
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <Mail className="h-6 w-6 text-green-600" />
-                  <span>Change Email Address</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <Form {...emailForm}>
-                  <form
-                    onSubmit={emailForm.handleSubmit(handleChangeEmail)}
-                    className="space-y-6"
-                  >
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <FormField
-                        control={emailForm.control}
-                        name="newEmail"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                              New Email Address
-                            </FormLabel>
-                            <FormControl>
-                              <Input
-                                type="email"
-                                placeholder="Enter new email"
-                                className="rounded-xl border-gray-200 dark:border-gray-700 focus:border-green-500 dark:focus:border-green-400"
-                                {...field}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={emailForm.control}
-                        name="confirmEmail"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                              Confirm New Email
-                            </FormLabel>
-                            <FormControl>
-                              <Input
-                                type="email"
-                                placeholder="Confirm new email"
-                                className="rounded-xl border-gray-200 dark:border-gray-700 focus:border-green-500 dark:focus:border-green-400"
-                                {...field}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-
-                    {emailForm.formState.errors.root && (
-                      <p className="text-sm text-red-600 dark:text-red-400">
-                        {emailForm.formState.errors.root.message}
-                      </p>
-                    )}
-
-                    <Button
-                      type="submit"
-                      disabled={isEmailLoading}
-                      className="bg-green-600 hover:bg-green-700 text-white rounded-xl"
+            {/* Actions */}
+            <div className="px-4 sm:px-8 py-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {/* Sign out */}
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <button
+                      disabled={isBusy}
+                      className={cn(
+                        "flex items-center gap-3 rounded-xl border border-border px-4 py-3 text-left transition-colors hover:bg-accent hover:border-foreground/30 disabled:opacity-50 disabled:cursor-not-allowed"
+                      )}
                     >
-                      {isEmailLoading ? (
-                        "Updating..."
-                      ) : emailSaveSuccess ? (
-                        <>
-                          <Check className="h-4 w-4 mr-2" />
-                          Email Updated!
-                        </>
-                      ) : (
-                        <>
-                          <Save className="h-4 w-4 mr-2" />
-                          Update Email
-                        </>
-                      )}
-                    </Button>
-
-                    {emailSaveSuccess && (
-                      <p className="text-sm text-green-600 dark:text-green-400">
-                        Your email has been successfully updated
-                      </p>
-                    )}
-                  </form>
-                </Form>
-              </CardContent>
-            </Card>
-          </motion.div>
-
-          {/* Change Password */}
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.3 }}
-          >
-            <Card className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-0 shadow-xl rounded-3xl">
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <Lock className="h-6 w-6 text-purple-600" />
-                  <span>Change Password</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <Form {...passwordForm}>
-                  <form
-                    onSubmit={passwordForm.handleSubmit(handleChangePassword)}
-                    className="space-y-6"
-                  >
-                    <FormField
-                      control={passwordForm.control}
-                      name="currentPassword"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                            Current Password
-                          </FormLabel>
-                          <FormControl>
-                            <div className="relative">
-                              <Input
-                                type={"password"}
-                                placeholder="Enter current password"
-                                className="rounded-xl border-gray-200 dark:border-gray-700 focus:border-purple-500 dark:focus:border-purple-400 "
-                                {...field}
-                              />
-                            </div>
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <FormField
-                        control={passwordForm.control}
-                        name="newPassword"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                              New Password
-                            </FormLabel>
-                            <FormControl>
-                              <div className="relative">
-                                <Input
-                                  type={"password"}
-                                  placeholder="Enter new password"
-                                  className="rounded-xl border-gray-200 dark:border-gray-700 focus:border-purple-500 dark:focus:border-purple-400 "
-                                  {...field}
-                                />
-                              </div>
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={passwordForm.control}
-                        name="confirmPassword"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                              Confirm New Password
-                            </FormLabel>
-                            <FormControl>
-                              <div className="relative">
-                                <Input
-                                  type={"password"}
-                                  placeholder="Confirm new password"
-                                  className="rounded-xl border-gray-200 dark:border-gray-700 focus:border-purple-500 dark:focus:border-purple-400 "
-                                  {...field}
-                                />
-                              </div>
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-
-                    {passwordForm.formState.errors.root && (
-                      <p className="text-sm text-red-600 dark:text-red-400">
-                        {passwordForm.formState.errors.root.message}
-                      </p>
-                    )}
-
-                    <Button
-                      type="submit"
-                      disabled={isPasswordLoading}
-                      className="bg-purple-600 hover:bg-purple-700 text-white rounded-xl"
-                    >
-                      {isPasswordLoading ? (
-                        "Updating..."
-                      ) : passwordSaveSuccess ? (
-                        <>
-                          <Check className="h-4 w-4 mr-2" />
-                          Password Updated!
-                        </>
-                      ) : (
-                        <>
-                          <Save className="h-4 w-4 mr-2" />
-                          Update Password
-                        </>
-                      )}
-                    </Button>
-
-                    {passwordSaveSuccess && (
-                      <p className="text-sm text-green-600 dark:text-green-400">
-                        Your password has been successfully updated.
-                      </p>
-                    )}
-                  </form>
-                </Form>
-              </CardContent>
-            </Card>
-          </motion.div>
-
-          {/* Account Actions */}
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.4 }}
-          >
-            <Card className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-0 shadow-xl rounded-3xl">
-              <CardHeader>
-                <CardTitle>Account Actions</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {/* Logout */}
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <Button
-                        variant="outline"
-                        className="w-full rounded-xl"
-                        disabled={isLogoutLoading || isDeleteLoading}
+                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted">
+                        {isLogoutLoading
+                          ? <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                          : <LogOut className="h-4 w-4 text-muted-foreground" />
+                        }
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-sm font-semibold leading-none">Sign Out</p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          End your current session
+                        </p>
+                      </div>
+                    </button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent className="rounded-2xl">
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Sign out?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        You will be redirected to the login page.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel className="rounded-xl">Cancel</AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={handleLogout}
+                        disabled={isBusy}
+                        className="rounded-xl"
                       >
-                        {isLogoutLoading ? (
-                          <Loader2 className="size-4 mr-2 animate-spin" />
-                        ) : (
-                          <LogOut className="h-4 w-4 mr-2" />
-                        )}
                         Sign Out
-                      </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent className="rounded-2xl">
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>Sign Out</AlertDialogTitle>
-                        <AlertDialogDescription>
-                          Are you sure you want to sign out of your account?
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel className="rounded-xl">
-                          Cancel
-                        </AlertDialogCancel>
-                        <AlertDialogAction
-                          onClick={handleLogout}
-                          className="rounded-xl"
-                          disabled={isLogoutLoading || isDeleteLoading}
-                        >
-                          Sign Out
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
 
-                  {/* Delete Account */}
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <Button
-                        variant="outline"
-                        className="w-full text-red-600 border-red-200  rounded-xl"
-                        disabled={isLogoutLoading || isDeleteLoading}
+                {/* Delete account */}
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <button
+                      disabled={isBusy}
+                      className={cn(
+                        "flex items-center gap-3 rounded-xl border border-destructive/30 px-4 py-3 text-left transition-colors hover:bg-destructive/5 hover:border-destructive/60 disabled:opacity-50 disabled:cursor-not-allowed"
+                      )}
+                    >
+                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-destructive/10">
+                        {isDeleteLoading
+                          ? <Loader2 className="h-4 w-4 animate-spin text-destructive" />
+                          : <Trash2 className="h-4 w-4 text-destructive" />
+                        }
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-sm font-semibold leading-none text-destructive">
+                          Delete Account
+                        </p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Permanently remove all your data
+                        </p>
+                      </div>
+                    </button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent className="rounded-2xl">
+                    <AlertDialogHeader>
+                      <AlertDialogTitle className="text-destructive">
+                        Delete your account?
+                      </AlertDialogTitle>
+                      <AlertDialogDescription>
+                        This action is permanent and cannot be undone. All your
+                        data — including saved content, flashcards, and history —
+                        will be deleted immediately.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel className="rounded-xl">Cancel</AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={handleDeleteAccount}
+                        disabled={isBusy}
+                        className="rounded-xl bg-destructive hover:bg-destructive/90 text-destructive-foreground"
                       >
-                        {isDeleteLoading ? (
-                          <Loader2 className="size-4 mr-2 animate-spin" />
-                        ) : (
-                          <Trash2 className="h-4 w-4 mr-2" />
-                        )}
                         Delete Account
-                      </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent className="rounded-2xl">
-                      <AlertDialogHeader>
-                        <AlertDialogTitle className="text-red-600">
-                          Delete Account
-                        </AlertDialogTitle>
-                        <AlertDialogDescription>
-                          Are you sure you want to delete your account? This
-                          action cannot be undone and will permanently remove
-                          all your data.
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel className="rounded-xl">
-                          Cancel
-                        </AlertDialogCancel>
-                        <AlertDialogAction
-                          onClick={handleDeleteAccount}
-                          className="bg-red-600 hover:bg-red-700 rounded-xl"
-                          disabled={isLogoutLoading || isDeleteLoading}
-                        >
-                          Delete Account
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-        </div>
-      </section>
-    </>
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+      </main>
+    </div>
   );
 }

@@ -1,5 +1,6 @@
 "use client";
-import {  useState, useEffect, ReactNode } from "react";
+
+import { useState, useEffect, ReactNode } from "react";
 import { useInView } from "react-intersection-observer";
 import { Loader } from "lucide-react";
 import useInfiniteScroll from "@/hooks/use-infinite-scroll";
@@ -13,15 +14,10 @@ type FetchResult<T> = {
 
 type GeneralPageUIProps<T> = {
   title: string;
-
   fetchItems: (args: { pageParam?: number; signal?: AbortSignal }) => Promise<FetchResult<T>>;
-
   renderCard: (item: T, onView: (item: T) => void) => ReactNode;
-
   skeleton: ReactNode;
-
   renderViewer: (item: T, onClose: () => void) => ReactNode;
-
   emptyText?: string;
 };
 
@@ -33,7 +29,6 @@ export function GeneralPageUI<T>({
   renderViewer,
   emptyText = "No items found.",
 }: GeneralPageUIProps<T>) {
-//   const [sort, setSort] = useState("createdAt");
   const [viewingItem, setViewingItem] = useState<T | null>(null);
   const { ref, inView } = useInView();
 
@@ -51,16 +46,14 @@ export function GeneralPageUI<T>({
   );
 
   useEffect(() => {
-    if (inView && !isFetchingNextPage && hasNextPage) {
-      fetchNextPage();
-    }
+    if (inView && !isFetchingNextPage && hasNextPage) fetchNextPage();
   }, [inView, isFetchingNextPage, hasNextPage, fetchNextPage]);
 
   return (
-    <div className="w-full px-4 py-6 h-full">
-      <FilterControls title={title}  />
+    <div className="w-full px-4 sm:px-6 py-8 min-h-full overflow-x-hidden">
+      <FilterControls title={title} />
 
-      <div className="grid pt-6 gap-4 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid mt-6 gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
         {isLoading &&
           Array.from({ length: 6 }).map((_, i) => <div key={i}>{skeleton}</div>)}
 
@@ -69,23 +62,21 @@ export function GeneralPageUI<T>({
         )}
 
         {!isLoading && !error && items && (
-          items.length > 0 ? (
-            items.map((item, i) => (
-              <div key={i}>{renderCard(item, setViewingItem)}</div>
-            ))
-          ) : (
-            <p className="text-center w-full col-span-3 py-8">{emptyText}</p>
-          )
+          items.length > 0
+            ? items.map((item, i) => (
+                <div key={i}>{renderCard(item, setViewingItem)}</div>
+              ))
+            : <p className="col-span-full py-12 text-center text-sm text-muted-foreground">{emptyText}</p>
         )}
       </div>
 
+      {/* Infinite scroll sentinel */}
       {isFetchingNextPage && (
-        <section className="w-full flex items-center justify-center py-8">
-          <Loader className="h-4 w-4 animate-spin" />
-        </section>
+        <div className="w-full flex items-center justify-center py-8">
+          <Loader className="h-4 w-4 animate-spin text-muted-foreground" />
+        </div>
       )}
-
-      <section ref={ref} className="w-full" />
+      <div ref={ref} className="w-full" />
 
       {viewingItem && renderViewer(viewingItem, () => setViewingItem(null))}
     </div>

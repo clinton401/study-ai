@@ -13,7 +13,8 @@ import getOrCreateGuestId from "@/hooks/get-or-create-guest-id";
 import { generateText } from 'ai';
 import { openrouter, getModelForFeature, DEFAULT_GENERATION_CONFIG } from "@/lib/ai-client";
 
-// Type definitions
+// ─── Types ────────────────────────────────────────────────────────────────────
+
 type ToneType = "formal" | "friendly" | "academic" | "casual";
 
 interface RephraseResult {
@@ -21,7 +22,8 @@ interface RephraseResult {
     error: string | null;
 }
 
-// Constants
+// ─── Constants ────────────────────────────────────────────────────────────────
+
 const VALIDATION = {
     MIN_LENGTH: 100,
     MAX_LENGTH: 50_000,
@@ -36,25 +38,21 @@ const VALIDATION = {
     },
 } as const;
 
-/**
- * Tone-specific instructions for natural rephrasing
- */
+// ─── Tone instructions ────────────────────────────────────────────────────────
+
 const TONE_INSTRUCTIONS: Record<ToneType, string> = {
     formal:
         "Use professional vocabulary and complete sentences. " +
         "Maintain dignity and respect. Avoid contractions. " +
         "Structure sentences clearly with proper grammar.",
-
     friendly:
         "Use warm, conversational language. " +
         "Include contractions where natural. " +
         "Write as if speaking to a friend, maintaining positivity.",
-
     academic:
         "Use scholarly language with precise terminology. " +
         "Employ complex sentence structures where appropriate. " +
         "Maintain objectivity and analytical tone.",
-
     casual:
         "Use everyday language and relaxed phrasing. " +
         "Include contractions freely. " +
@@ -64,30 +62,37 @@ const TONE_INSTRUCTIONS: Record<ToneType, string> = {
 const rephraseError = (error: string): RephraseResult =>
     errorResponse(error, { rephrase: null });
 
-/**
- * Build optimized prompt for rephrasing
- */
+// ─── Prompt ───────────────────────────────────────────────────────────────────
+
 function buildRephrasePrompt(text: string, tone: ToneType): string {
+    const wordCount = text.trim().split(/\s+/).filter(Boolean).length;
+
     return `Rewrite the following text in a ${tone} tone. ${TONE_INSTRUCTIONS[tone]}
 
 CRITICAL RULES:
-- Fix all grammatical errors
+- Rewrite EVERY sentence — do not skip, summarise, merge, or drop any part of the original
+- Every idea, point, and detail from the input must appear in the output, in the same order
+- Target approximately ${wordCount} words — do not produce significantly fewer words than the original
+- Fix all grammatical errors as you rewrite
 - Use simple, clear English suitable for beginners
-- Maintain the original meaning
-- Output ONLY the rewritten text
-- NO explanations, preambles, or markdown formatting
-- NO quotes or code blocks around the output
+- Do NOT stop early — rewrite the entire input before ending your response
+- Output ONLY the rewritten text — no labels, no preamble, no "Here is the rewrite:"
+- NO markdown formatting, quotes, or code blocks
 
 Text to rewrite:
 ${text}`;
 }
 
+// ─── Action ───────────────────────────────────────────────────────────────────
+
 /**
- * Rephrase text with specified tone using AI
- * 
- * @param text - Text to rephrase (100-50,000 characters)
+ * Rephrase text with specified tone using AI.
+ *
+ * generateText is intentionally used here (not generateObject) — rephrasing
+ * produces freeform prose, not structured data, so a Zod schema adds no value.
+ *
+ * @param text - Text to rephrase (100–50,000 characters)
  * @param tone - Desired tone for output
- * @returns Rephrased text or error
  */
 export async function rephraseText(
     text: string,
@@ -109,9 +114,7 @@ export async function rephraseText(
             lockoutPeriod: VALIDATION.RATE_LIMIT.LOCKOUT_MS,
         }, true, "REPHRASE");
 
-        if (rateLimitError) {
-            return rephraseError(rateLimitError);
-        }
+        if (rateLimitError) return rephraseError(rateLimitError);
 
         // Input validation
         const trimmedText = text.trim();
@@ -124,7 +127,7 @@ export async function rephraseText(
 
         if (text.length > VALIDATION.MAX_LENGTH) {
             return rephraseError(
-                `Text to be rephrased must have maximum ${VALIDATION.MAX_LENGTH.toLocaleString()} characters`
+                `Text to be rephrased must have a maximum of ${VALIDATION.MAX_LENGTH.toLocaleString()} characters.`
             );
         }
 
@@ -142,40 +145,30 @@ export async function rephraseText(
             const message = isGuest
                 ? `You've reached your free daily limit (${limit}/${limit}). Sign in to unlock more rephrase generations!`
                 : `Daily AI rephrase generation limit reached (${limit}/${limit}).`;
-
             return rephraseError(message);
         }
 
-        // Generate rephrased text using Vercel AI SDK v4
+        // Generate rephrased text
         const { text: generatedText } = await generateText({
             model: openrouter(getModelForFeature('REPHRASE')),
             prompt: buildRephrasePrompt(text, tone),
             temperature: DEFAULT_GENERATION_CONFIG.temperature,
-            topP: DEFAULT_GENERATION_CONFIG.topP
+            topP: DEFAULT_GENERATION_CONFIG.topP,
         });
 
-        // Validate AI output
         if (!generatedText?.trim()) {
             return rephraseError("Failed to rephrase text. Please try again.");
         }
 
         // Record usage (fire-and-forget)
-        createAiRephraseUsage(userId).catch(err =>
-            console.error("Failed to record usage:", err)
+        createAiRephraseUsage(userId).catch((err) =>
+            console.error("Failed to record rephrase usage:", err)
         );
 
-        return {
-            rephrase: generatedText.trim(),
-            error: null
-        };
+        return { rephrase: generatedText.trim(), error: null };
 
     } catch (err) {
         console.error("Rephrase error:", err);
-
-        const errorMessage = err instanceof Error
-            ? err.message
-            : ERROR_MESSAGES.INTERNAL_SERVER_ERROR;
-
-        return rephraseError(errorMessage);
+        return rephraseError(ERROR_MESSAGES.INTERNAL_SERVER_ERROR);
     }
 }

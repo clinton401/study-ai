@@ -10,16 +10,41 @@ import { rateLimit } from "@/lib/rate-limit";
 import { errorResponse } from "@/lib/main";
 import { ERROR_MESSAGES } from "@/lib/error-messages";
 import getOrCreateGuestId from "@/hooks/get-or-create-guest-id";
-import { generateText } from 'ai';
+import { generateObject } from 'ai';
 import { openrouter, getModelForFeature } from "@/lib/ai-client";
+import { z } from "zod";
 
-// Type definitions
+// ─── Types ────────────────────────────────────────────────────────────────────
+
 interface GrammarFixResult {
     grammarFixes: string[];
     error: string | null;
 }
 
-// Constants
+// ─── Schema ───────────────────────────────────────────────────────────────────
+
+/**
+ * Zod schema passed directly to generateObject.
+ * The AI SDK enforces this at the model level — no manual parsing needed.
+ * Each fix is a single human-readable string in the format:
+ * "Error Type: [original] → [correction]"
+ */
+const grammarSchema = z.object({
+    hasErrors: z.boolean().describe(
+        "True if any grammar, spelling, punctuation, or style errors were found. False if the text is clean."
+    ),
+    fixes: z.array(
+        z.string().describe(
+            'A single error in the format: "Error Type: [original text] → [corrected text]". ' +
+            "Keep it concise and beginner-friendly."
+        )
+    ).describe(
+        "List of all errors found. Empty array if hasErrors is false."
+    ),
+});
+
+// ─── Constants ────────────────────────────────────────────────────────────────
+
 const VALIDATION = {
     MIN_LENGTH: 50,
     MAX_LENGTH: 50_000,
@@ -37,66 +62,37 @@ const VALIDATION = {
 const fixGrammarError = (error: string): GrammarFixResult =>
     errorResponse(error, { grammarFixes: [] });
 
-/**
- * Build optimized grammar check prompt
- */
+// ─── Prompt ───────────────────────────────────────────────────────────────────
+
 function buildGrammarPrompt(text: string): string {
-    return `Analyze the following text and list ALL errors found. For each error, provide:
-- The type of error (grammar/spelling/punctuation/word usage/sentence structure)
-- The original text with the error
-- The corrected version
+    return `You are a grammar checker. Analyze the text below and identify ALL errors.
+
+For each error found, return a string in this exact format:
+"Error Type: [original phrase with error] → [corrected phrase]"
+
+Error types to check: grammar, spelling, punctuation, word usage, sentence structure.
+
+Rules:
+- Be thorough — find every error, not just obvious ones
 - Keep corrections simple and clear for beginners
+- If the text has NO errors, set hasErrors to false and return an empty fixes array
 
-FORMAT REQUIREMENTS:
-- One error per line
-- Format: "Error Type: [original] → [correction]"
-- If NO errors found, respond with exactly: "No errors found"
-- NO introductions, explanations, or additional text
-- NO numbered lists or bullet points
-
-Text to check:
-${text}`;
+Text to analyze:
+"""
+${text}
+"""`;
 }
 
-/**
- * Parse AI response into structured error list
- * Handles various response formats gracefully
- */
-function parseGrammarErrors(responseText: string): string[] {
-    const normalized = responseText.trim();
-
-    // Check for "no errors" responses
-    if (
-        !normalized ||
-        normalized.toLowerCase().includes("no errors found") ||
-        normalized.toLowerCase().includes("no errors")
-    ) {
-        return [];
-    }
-
-    // Split by newlines and clean up
-    return normalized
-        .split("\n")
-        .map(line => line.trim())
-        .filter(line => {
-            // Filter out empty lines and "no errors" mentions
-            return (
-                line.length > 0 &&
-                !line.toLowerCase().includes("no errors")
-            );
-        })
-        .map(line => {
-            // Remove list markers (-, •, *, numbers)
-            return line.replace(/^[-•*\d.)\]]+\s*/, "");
-        })
-        .filter(line => line.length > 0); // Final cleanup
-}
+// ─── Action ───────────────────────────────────────────────────────────────────
 
 /**
- * Fix grammar errors in text using AI
- * 
- * @param text - Text to check (50-50,000 characters)
- * @returns Array of grammar errors or empty array if none found
+ * Fix grammar errors in text using AI with structured output.
+ *
+ * Uses generateObject + Zod schema instead of generateText + manual parsing.
+ * The SDK enforces the schema at model level — typed, reliable, zero regex.
+ *
+ * @param text - Text to check (50–50,000 characters)
+ * @returns Array of grammar fix strings or empty array if none found
  */
 export async function fixGrammar(text: string): Promise<GrammarFixResult> {
     try {
@@ -130,7 +126,7 @@ export async function fixGrammar(text: string): Promise<GrammarFixResult> {
 
         if (text.length > VALIDATION.MAX_LENGTH) {
             return fixGrammarError(
-                `Text to be fixed must have maximum ${VALIDATION.MAX_LENGTH.toLocaleString()} characters`
+                `Text to be fixed must have maximum ${VALIDATION.MAX_LENGTH.toLocaleString()} characters.`
             );
         }
 
@@ -146,31 +142,30 @@ export async function fixGrammar(text: string): Promise<GrammarFixResult> {
 
         if (usageCount >= limit) {
             const message = isAuthenticated
-                ? `Daily AI grammar fix generation limit reached (${limit}/${limit}).`
+                ? `Daily AI grammar fix limit reached (${limit}/${limit}).`
                 : `You've reached your free daily limit (${limit}/${limit}). Sign in to unlock more grammar fixes!`;
-
             return fixGrammarError(message);
         }
 
-        // Generate grammar analysis using Vercel AI SDK v4
-        const { text: responseText } = await generateText({
+        // ── generateObject replaces generateText + parseGrammarErrors ─────────
+        const { object } = await generateObject({
             model: openrouter(getModelForFeature('GRAMMAR')),
+            schema: grammarSchema,
             prompt: buildGrammarPrompt(text),
-            temperature: 0.3, // Lower temperature for factual analysis
-            topP: 0.9,
+            temperature: 0.2, // Low — factual analysis needs consistency
         });
 
-        // Parse and validate errors
-        const errors = parseGrammarErrors(responseText);
-
-        // Record usage (fire-and-forget)
-        if (errors.length > 0) {
-            createAiFixGrammarUsage(userId).catch(err =>
-                console.error("Failed to record usage:", err)
+        // Record usage only when errors are found (fire-and-forget)
+        if (object.hasErrors && object.fixes.length > 0) {
+            createAiFixGrammarUsage(userId).catch((err) =>
+                console.error("Failed to record grammar usage:", err)
             );
         }
 
-        return { grammarFixes: errors, error: null };
+        return {
+            grammarFixes: object.hasErrors ? object.fixes : [],
+            error: null,
+        };
 
     } catch (err) {
         console.error("Error in fixGrammar:", err);

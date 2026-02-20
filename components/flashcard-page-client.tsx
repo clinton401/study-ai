@@ -7,24 +7,12 @@ import { FlashcardViewer } from "@/components/flashcard-viewer";
 import { SummaryCardSkeleton } from "@/components/summary-card-skeleton";
 
 export function FlashcardPageClient() {
-  const renderCard = (
-    flashcardSet: FullUserFlashcard,
-    onView: (f: FullUserFlashcard) => void
-  ) => (
-    <FlashcardSetCard
-      flashcardSet={flashcardSet}
-      onView={() => onView(flashcardSet)}
-    />
+  const renderCard = (set: FullUserFlashcard, onView: (f: FullUserFlashcard) => void) => (
+    <FlashcardSetCard flashcardSet={set} onView={() => onView(set)} />
   );
 
-  const renderViewer = (
-    flashcardSet: FullUserFlashcard,
-    onClose: () => void
-  ) => (
-    <FlashcardViewer
-      flashcardSet={flashcardSet}
-      onClose={onClose}
-    />
+  const renderViewer = (set: FullUserFlashcard, onClose: () => void) => (
+    <FlashcardViewer flashcardSet={set} onClose={onClose} />
   );
 
   const fetchItems = async ({
@@ -47,7 +35,7 @@ export function FlashcardPageClient() {
       skeleton={<SummaryCardSkeleton />}
       renderCard={renderCard}
       renderViewer={renderViewer}
-      emptyText="No flashcards found."
+      emptyText="No flashcard sets yet. Generate one from the Study Tools."
     />
   );
 }

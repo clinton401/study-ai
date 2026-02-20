@@ -1,8 +1,8 @@
 "use client";
+
 import { FC, useState } from "react";
 import fetchData from "@/hooks/fetch-data";
 import { QueryFunctionContext } from "@tanstack/react-query";
-
 import { SummaryCard } from "@/components/summary-card";
 import { SummaryViewer } from "@/components/summary-viewer";
 import { QuizViewer } from "@/components/quiz-viewer";
@@ -10,47 +10,20 @@ import { FlashcardViewer } from "@/components/flashcard-viewer";
 import { TermPaperCard } from "@/components/term-paper-card";
 import { TermPaperViewer } from "@/components/term-paper-viewer";
 import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
 import { SummaryCardSkeleton } from "./summary-card-skeleton";
-import { Card, CardContent } from "@/components/ui/card";
-import {
-  RefreshCw,
-  AlertCircle,
-} from "lucide-react";
+import { RefreshCw, AlertCircle } from "lucide-react";
 import { FullUserSummary } from "@/models/user-summary";
 import { FullTermPaper } from "@/models/term-paper";
 import Link from "next/link";
 import { FullUserFlashcard } from "@/models/user-flashcards-schema";
-import {FlashcardSetCard} from "@/components/flashcard-set-card";
-import {QuizSetCard} from "@/components/quiz-set-card";
-import {FullUserQuestion} from "@/models/user-questions-schema";
+import { FlashcardSetCard } from "@/components/flashcard-set-card";
+import { QuizSetCard } from "@/components/quiz-set-card";
+import { FullUserQuestion } from "@/models/user-questions-schema";
 
-interface PaginatedSummaryResponse {
-  data: FullUserSummary[];
-  currentPage: number;
-  totalPages: number;
-  total: number;
-  nextPage: number | null;
-  prevPage: number | null;
-}
-interface PaginatedContentResponse {
-  data: FullTermPaper[];
-  currentPage: number;
-  totalPages: number;
-  total: number;
-  nextPage: number | null;
-  prevPage: number | null;
-}
-interface PaginatedFlashcardResponse {
-  data: FullUserFlashcard[];
-  currentPage: number;
-  totalPages: number;
-  total: number;
-  nextPage: number | null;
-  prevPage: number | null;
-}
-interface PaginatedQuizResponse {
-  data: FullUserQuestion[];
+// ─── Types ────────────────────────────────────────────────────────────────────
+
+interface Paginated<T> {
+  data: T[];
   currentPage: number;
   totalPages: number;
   total: number;
@@ -58,371 +31,205 @@ interface PaginatedQuizResponse {
   prevPage: number | null;
 }
 
-interface StatsErrorProps {
-  onRetry: () => void;
-  error?: Error | null;
-}
-
-type SummaryQueryKey = ["stats-summary"];
-type ContentQueryKey = ["stats-content"];
+type SummaryQueryKey   = ["stats-summary"];
+type ContentQueryKey   = ["stats-content"];
 type FlashcardQueryKey = ["stats-flashcard"];
-type QuizQueryKey = ["stats-quiz"];
-const fetchSummary = async ({
-  signal,
-}: QueryFunctionContext<SummaryQueryKey>): Promise<PaginatedSummaryResponse> => {
-  const response = await fetch("/api/dashboard/stats/summary?limit=3", {
-    signal,
-  });
-  if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(errorData?.error || "Failed to fetch user summaries");
-  }
-  return response.json();
+type QuizQueryKey      = ["stats-quiz"];
+
+// ─── Fetchers ─────────────────────────────────────────────────────────────────
+
+const fetchSummary = async ({ signal }: QueryFunctionContext<SummaryQueryKey>): Promise<Paginated<FullUserSummary>> => {
+  const res = await fetch("/api/dashboard/stats/summary?limit=3", { signal });
+  if (!res.ok) throw new Error((await res.json())?.error || "Failed to fetch summaries");
+  return res.json();
 };
-const fetchContent = async ({
-  signal,
-}: QueryFunctionContext<ContentQueryKey>): Promise<PaginatedContentResponse> => {
-  const response = await fetch("/api/dashboard/stats/content?limit=3", {
-    signal,
-  });
-  if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(errorData?.error || "Failed to fetch contents generated");
-  }
-  return response.json();
+const fetchContent = async ({ signal }: QueryFunctionContext<ContentQueryKey>): Promise<Paginated<FullTermPaper>> => {
+  const res = await fetch("/api/dashboard/stats/content?limit=3", { signal });
+  if (!res.ok) throw new Error((await res.json())?.error || "Failed to fetch content");
+  return res.json();
 };
-const fetchFlashcard = async ({
-  signal,
-}: QueryFunctionContext<FlashcardQueryKey>): Promise<PaginatedFlashcardResponse> => {
-  const response = await fetch("/api/dashboard/stats/flashcards?limit=3", {
-    signal,
-  });
-  if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(errorData?.error || "Failed to fetch flashcards generated");
-  }
-  return response.json();
+const fetchFlashcard = async ({ signal }: QueryFunctionContext<FlashcardQueryKey>): Promise<Paginated<FullUserFlashcard>> => {
+  const res = await fetch("/api/dashboard/stats/flashcards?limit=3", { signal });
+  if (!res.ok) throw new Error((await res.json())?.error || "Failed to fetch flashcards");
+  return res.json();
 };
-const fetchQuiz = async ({
-  signal,
-}: QueryFunctionContext<QuizQueryKey>): Promise<PaginatedQuizResponse> => {
-  const response = await fetch("/api/dashboard/stats/quiz?limit=3", {
-    signal,
-  });
-  if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(errorData?.error || "Failed to fetch quiz generated");
-  }
-  return response.json();
+const fetchQuiz = async ({ signal }: QueryFunctionContext<QuizQueryKey>): Promise<Paginated<FullUserQuestion>> => {
+  const res = await fetch("/api/dashboard/stats/quiz?limit=3", { signal });
+  if (!res.ok) throw new Error((await res.json())?.error || "Failed to fetch quizzes");
+  return res.json();
 };
 
+// ─── Section wrapper ──────────────────────────────────────────────────────────
 
-
-interface StatsErrorProps {
-  onRetry: () => void;
-  error?: Error | null;
-}
-function StatsError({ onRetry, error }: StatsErrorProps) {
+function SectionHeader({ title, href }: { title: string; href: string }) {
   return (
-    <Card className="md:col-span-3">
-      <CardContent className="flex flex-col items-center justify-center py-8">
-        <AlertCircle className="h-8 w-8 text-destructive mb-4" />
-        <p className="text-sm text-muted-foreground mb-4">
-          {error?.message || " Failed to load user summaries"}
-        </p>
-        <Button onClick={onRetry} variant="outline" size="sm">
-          <RefreshCw className="h-4 w-4 mr-2" />
-          Try Again
-        </Button>
-      </CardContent>
-    </Card>
-    // </div>
+    <div className="flex items-center justify-between mb-5">
+      <h2 className="text-lg font-bold tracking-tight">{title}</h2>
+      <Button asChild variant="outline" size="sm" className="rounded-xl text-xs">
+        <Link href={href}>View All</Link>
+      </Button>
+    </div>
   );
 }
+
+function SectionError({ onRetry, error }: { onRetry: () => void; error?: Error | null }) {
+  return (
+    <div className="rounded-2xl border border-border bg-card shadow-sm p-8 col-span-3 flex flex-col items-center gap-3 text-center">
+      <AlertCircle className="h-7 w-7 text-destructive" />
+      <p className="text-sm text-muted-foreground">
+        {error?.message || "Failed to load content"}
+      </p>
+      <Button onClick={onRetry} variant="outline" size="sm" className="rounded-xl gap-1.5">
+        <RefreshCw className="h-3.5 w-3.5" />
+        Try Again
+      </Button>
+    </div>
+  );
+}
+
+function EmptyState({ message }: { message: string }) {
+  return (
+    <p className="col-span-3 py-12 text-center text-sm text-muted-foreground">
+      {message}
+    </p>
+  );
+}
+
+// ─── Main component ───────────────────────────────────────────────────────────
 
 export const DashboardUI: FC = () => {
-    const [viewingContent, setViewingContent] = useState<{
-      type: "term-paper" | "summary" | "flashcards" | "quiz" | null;
-      data: FullUserSummary | FullTermPaper | FullUserQuestion | FullUserFlashcard | null;
-    }>({ type: null, data: null });
-  const {
-    data: summaryData,
-    error: summaryError,
-    isLoading: summaryLoading,
-    refetch: refetchSummary,
-  } = fetchData<PaginatedSummaryResponse, SummaryQueryKey>(
-    ["stats-summary"],
-    fetchSummary
-  );
-  const {
-    data: contentData,
-    error: contentError,
-    isLoading: contentLoading,
-    refetch: refetchContent,
-  } = fetchData<PaginatedContentResponse, ContentQueryKey>(
-    ["stats-content"],
-    fetchContent
-  );
-  const {
-    data: flashcardData,
-    error: flashcardError,
-    isLoading: flashcardLoading,
-    refetch: refetchFlashcard,
-  } = fetchData<PaginatedFlashcardResponse, FlashcardQueryKey>(
-    ["stats-flashcard"],
-    fetchFlashcard
-  );
-  const {
-    data: quizData,
-    error: quizError,
-    isLoading: quizLoading,
-    refetch: refetchQuiz,
-  } = fetchData<PaginatedQuizResponse, QuizQueryKey>(
-    ["stats-quiz"],
-    fetchQuiz
-  );
+  const [viewingContent, setViewingContent] = useState<{
+    type: "term-paper" | "summary" | "flashcards" | "quiz" | null;
+    data: FullUserSummary | FullTermPaper | FullUserQuestion | FullUserFlashcard | null;
+  }>({ type: null, data: null });
 
-  const summaries = summaryData?.data;
-  const contents = contentData?.data;
-  const flashcards = flashcardData?.data;
-  const quizzes = quizData?.data;
+  const close = () => setViewingContent({ type: null, data: null });
+
+  const { data: summaryData,   error: summaryError,   isLoading: summaryLoading,   refetch: refetchSummary   } = fetchData<Paginated<FullUserSummary>,   SummaryQueryKey>  (["stats-summary"],   fetchSummary);
+  const { data: contentData,   error: contentError,   isLoading: contentLoading,   refetch: refetchContent   } = fetchData<Paginated<FullTermPaper>,     ContentQueryKey>  (["stats-content"],   fetchContent);
+  const { data: flashcardData, error: flashcardError, isLoading: flashcardLoading, refetch: refetchFlashcard } = fetchData<Paginated<FullUserFlashcard>, FlashcardQueryKey>(["stats-flashcard"], fetchFlashcard);
+  const { data: quizData,      error: quizError,      isLoading: quizLoading,      refetch: refetchQuiz      } = fetchData<Paginated<FullUserQuestion>,  QuizQueryKey>     (["stats-quiz"],      fetchQuiz);
+
   const handleEditedContent = (content: string) => {
-    setViewingContent((prev) => {
-      if (prev.type === "term-paper" && prev.data) {
-        return { type: "term-paper", data: { ...prev.data, content } };
-      }
-      return prev;
-    });
-  }
+    setViewingContent((prev) =>
+      prev.type === "term-paper" && prev.data
+        ? { type: "term-paper", data: { ...prev.data, content } }
+        : prev
+    );
+  };
+
+  const grid = "grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3";
+  const skeletons = Array.from({ length: 3 }, (_, i) => <SummaryCardSkeleton key={i} />);
+
   return (
-    <div className="">
-      {/* <FilterControls /> */}
+    <div className="space-y-10">
+      {/* Term Papers */}
+      <section>
+        <SectionHeader title="Term Papers & Essays" href="/dashboard/content" />
+        <div className={grid}>
+          {contentLoading && skeletons}
+          {!contentLoading && (contentError || !contentData) && (
+            <SectionError onRetry={() => refetchContent()} error={contentError} />
+          )}
+          {!contentLoading && !contentError && contentData && (
+            contentData.data.length > 0
+              ? contentData.data.map((paper) => (
+                  <TermPaperCard
+                    key={paper._id.toString()}
+                    paper={paper}
+                    onView={(p) => setViewingContent({ type: "term-paper", data: p })}
+                  />
+                ))
+              : <EmptyState message="No term papers yet. Create one to get started." />
+          )}
+        </div>
+      </section>
 
-      <div className="space-y-6">
-        <section>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-2xl font-bold tracking-tight">
-              Term Papers & Essays
-            </h2>
-            <Button asChild variant="outline">
-              <Link href="/dashboard/content">View All</Link>
-            </Button>
-            {/* <Button variant="outline" asChild> <Link href="/dashboard/content">View All</Link></Button> */}
-          </div>
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {contentLoading && (
-              <>
-                {Array.from({ length: 3 }).map((_, i) => (
-                  <SummaryCardSkeleton key={i} />
-                ))}
-              </>
-            )}
-            {!contentLoading && (contentError || !contents) && (
-              <StatsError
-                onRetry={() => refetchContent()}
-                error={contentError}
-              />
-            )}
-            {!contentLoading && !contentError && contents && (
-              <>
-                {contents.length > 0 ? (
-                  <>
-                    {contents.map((paper) => (
-                      <TermPaperCard
-                        key={paper._id.toString()}
-                        paper={paper}
-                        onView={(paper: FullTermPaper) =>
-                          setViewingContent({ type: "term-paper", data: paper })
-                        }
-                      />
-                    ))}
-                  </>
-                ) : (
-                  <p className="text-center w-full col-span-3 py-8 ">
-                    Looks like you don’t have any term papers, essays or letters
-                    yet. Create one now to get started!
-                  </p>
-                )}
-              </>
-            )}
-          </div>
-        </section>
+      <div className="h-px bg-border/60" />
 
-        <Separator />
+      {/* Summaries */}
+      <section>
+        <SectionHeader title="Summaries" href="/dashboard/summary" />
+        <div className={grid}>
+          {summaryLoading && skeletons}
+          {!summaryLoading && (summaryError || !summaryData) && (
+            <SectionError onRetry={() => refetchSummary()} error={summaryError} />
+          )}
+          {!summaryLoading && !summaryError && summaryData && (
+            summaryData.data.length > 0
+              ? summaryData.data.map((summary) => (
+                  <SummaryCard
+                    key={summary._id.toString()}
+                    summary={summary}
+                    onView={(s) => setViewingContent({ type: "summary", data: s })}
+                  />
+                ))
+              : <EmptyState message="No summaries yet. Create one to get started." />
+          )}
+        </div>
+      </section>
 
-        <section>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-2xl font-bold tracking-tight">Summaries</h2>
-            {/* <Button variant="outline" asChild>
-              {" "}
-              <Link href="/dashboard/summary"> View All</Link>
-            </Button> */}
-            <Button asChild variant="outline">
-              <Link href="/dashboard/summary">View All</Link>
-            </Button>
-          </div>
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {summaryLoading && (
-              <>
-                {Array.from({ length: 3 }).map((_, i) => (
-                  <SummaryCardSkeleton key={i} />
-                ))}
-              </>
-            )}
-            {!summaryLoading && (summaryError || !summaries) && (
-              <StatsError
-                onRetry={() => refetchSummary()}
-                error={summaryError}
-              />
-            )}
+      <div className="h-px bg-border/60" />
 
-            {!summaryLoading && !summaryError && summaries && (
-              <>
-                {summaries.length > 0 ? (
-                  <>
-                    {summaries.map((summary) => (
-                      <SummaryCard
-                        key={summary._id.toString()}
-                        summary={summary}
-                        onView={(summary: FullUserSummary) =>
-                          setViewingContent({ type: "summary", data: summary })
-                        }
-                      />
-                    ))}
-                  </>
-                ) : (
-                  <p className="text-center w-full col-span-3 py-8 ">
-                    Looks like you don’t have any summaries yet. Create one now
-                    to get started!
-                  </p>
-                )}
-              </>
-            )}
-          </div>
-        </section>
+      {/* Flashcards */}
+      <section>
+        <SectionHeader title="Flashcard Sets" href="/dashboard/flashcards" />
+        <div className={grid}>
+          {flashcardLoading && skeletons}
+          {!flashcardLoading && (flashcardError || !flashcardData) && (
+            <SectionError onRetry={() => refetchFlashcard()} error={flashcardError} />
+          )}
+          {!flashcardLoading && !flashcardError && flashcardData && (
+            flashcardData.data.length > 0
+              ? flashcardData.data.map((set) => (
+                  <FlashcardSetCard
+                    key={set._id.toString()}
+                    flashcardSet={set}
+                    onView={(s) => setViewingContent({ type: "flashcards", data: s })}
+                  />
+                ))
+              : <EmptyState message="No flashcard sets yet. Create one to get started." />
+          )}
+        </div>
+      </section>
 
-        <Separator />
+      <div className="h-px bg-border/60" />
 
-        <section>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-2xl font-bold tracking-tight">
-              Flashcard Sets
-            </h2>
-              <Button asChild variant="outline">
-              <Link href="/dashboard/flashcards">View All</Link>
-            </Button>
-          </div>
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {flashcardLoading && (
-              <>
-                {Array.from({ length: 3 }).map((_, i) => (
-                  <SummaryCardSkeleton key={i} />
-                ))}
-              </>
-            )}
-            {!flashcardLoading && (flashcardError || !flashcards) && (
-              <StatsError
-                onRetry={() => refetchFlashcard()}
-                error={flashcardError}
-              />
-            )}
+      {/* Quizzes */}
+      <section>
+        <SectionHeader title="Quiz Sets" href="/dashboard/quiz" />
+        <div className={grid}>
+          {quizLoading && skeletons}
+          {!quizLoading && (quizError || !quizData) && (
+            <SectionError onRetry={() => refetchQuiz()} error={quizError} />
+          )}
+          {!quizLoading && !quizError && quizData && (
+            quizData.data.length > 0
+              ? quizData.data.map((set) => (
+                  <QuizSetCard
+                    key={set._id.toString()}
+                    quizSet={set}
+                    onView={(s) => setViewingContent({ type: "quiz", data: s })}
+                  />
+                ))
+              : <EmptyState message="No quiz sets yet. Create one to get started." />
+          )}
+        </div>
+      </section>
 
-            {!flashcardLoading && !flashcardError && flashcards && (
-              <>
-                {flashcards.length > 0 ? (
-                  <>
-                    {flashcards.map((flashcardSet) => (
-                      <FlashcardSetCard
-                        key={flashcardSet._id.toString()}
-                        flashcardSet={flashcardSet}
-                        onView={(set: FullUserFlashcard) =>
-                          setViewingContent({ type: "flashcards", data: set })
-                        }
-                      />
-                    ))}
-                  </>
-                ) : (
-                  <p className="text-center w-full col-span-3 py-8 ">
-                    Looks like you don’t have any flashcards yet. Create one now
-                    to get started!
-                  </p>
-                )}
-              </>
-            )}
-          </div>
-        </section>
-
-        
-              <Separator />
-
-              <section>
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-2xl font-bold tracking-tight">Quiz Sets</h2>
-                  <Button asChild variant="outline">
-              <Link href="/dashboard/quiz">View All</Link>
-            </Button>
-                </div>
-                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                 {quizLoading && (
-              <>
-                {Array.from({ length: 3 }).map((_, i) => (
-                  <SummaryCardSkeleton key={i} />
-                ))}
-              </>
-            )}
-            {!quizLoading && (quizError || !quizzes) && (
-              <StatsError
-                onRetry={() => refetchQuiz()}
-                error={quizError}
-              />
-            )}
-
-            {!quizLoading && !quizError && quizzes && (
-              <>
-                {quizzes.length > 0 ? (
-                  <>
-                    {quizzes.map((quizSet) => (
-                    <QuizSetCard
-                      key={quizSet._id.toString()}
-                      quizSet={quizSet}
-                      onView={(set) => setViewingContent({ type: "quiz", data: set })}
-                    />
-                  ))}
-                  </>
-                ) : (
-                  <p className="text-center w-full col-span-3 py-8 ">
-                    Looks like you don’t have any quizzes yet. Create one now
-                    to get started!
-                  </p>
-                )}
-              </>
-            )}
-                 
-                </div>
-              </section>
-      </div>
+      {/* Viewers */}
       {viewingContent.type === "term-paper" && viewingContent.data && (
-        <TermPaperViewer
-          paper={viewingContent.data as FullTermPaper}
-          onClose={() => setViewingContent({ type: null, data: null })}
-          handleEditedContent={handleEditedContent}
-        />
+        <TermPaperViewer paper={viewingContent.data as FullTermPaper} onClose={close} handleEditedContent={handleEditedContent} />
       )}
       {viewingContent.type === "summary" && viewingContent.data && (
-        <SummaryViewer
-          summary={viewingContent.data as FullUserSummary}
-          onClose={() => setViewingContent({ type: null, data: null })}
-        />
+        <SummaryViewer summary={viewingContent.data as FullUserSummary} onClose={close} />
       )}
       {viewingContent.type === "flashcards" && viewingContent.data && (
-        <FlashcardViewer
-          flashcardSet={viewingContent.data as FullUserFlashcard}
-          onClose={() => setViewingContent({ type: null, data: null })}
-        />
+        <FlashcardViewer flashcardSet={viewingContent.data as FullUserFlashcard} onClose={close} />
       )}
-       {viewingContent.type === "quiz" && (
-          <QuizViewer quizSet={viewingContent.data as FullUserQuestion} onClose={() => setViewingContent({ type: null, data: null })} />
-        )}
+      {viewingContent.type === "quiz" && viewingContent.data && (
+        <QuizViewer quizSet={viewingContent.data as FullUserQuestion} onClose={close} />
+      )}
     </div>
   );
 };

@@ -6,15 +6,17 @@ import { rateLimit } from "@/lib/rate-limit";
 import { errorResponse } from "@/lib/main";
 import { ERROR_MESSAGES } from "@/lib/error-messages";
 import getOrCreateGuestId from "@/hooks/get-or-create-guest-id";
-import { 
-  countFlashcardsDailyUsage, 
-  createFlashcardsUsage 
+import {
+  countFlashcardsDailyUsage,
+  createFlashcardsUsage,
 } from "@/data/flashcards-usage";
 import { createUserFlashcards } from "@/data/user-flashcards";
-import { generateText } from 'ai';
+import { generateObject } from "ai";
 import { openrouter, getModelForFeature } from "@/lib/ai-client";
+import { z } from "zod";
 
-// Type definitions
+// ─── Types ────────────────────────────────────────────────────────────────────
+
 interface Flashcard {
   id: number;
   front: string;
@@ -26,7 +28,26 @@ interface GenerateFlashcardsResult {
   error: string | null;
 }
 
-// Constants
+// ─── Schema ───────────────────────────────────────────────────────────────────
+
+const flashcardsSchema = z.object({
+  flashcards: z.array(
+    z.object({
+      id: z.number().int().positive().describe(
+        "Sequential ID starting at 1, incrementing by 1 for each card."
+      ),
+      front: z.string().min(1).describe(
+        "The question or concept prompt — short and clear."
+      ),
+      back: z.string().min(1).describe(
+        "The correct answer or explanation for the front."
+      ),
+    })
+  ).describe("Array of flashcards generated from the source text."),
+});
+
+// ─── Constants ────────────────────────────────────────────────────────────────
+
 const VALIDATION = {
   MIN_LENGTH: 200,
   MAX_LENGTH: 700_000,
@@ -41,88 +62,37 @@ const VALIDATION = {
   },
 } as const;
 
-const flashcardError = (error: string): GenerateFlashcardsResult => 
+const flashcardError = (error: string): GenerateFlashcardsResult =>
   errorResponse(error, { flashcards: null });
 
-/**
- * Validate flashcard structure
- */
-function validateFlashcards(data: any): data is Flashcard[] {
-  if (!Array.isArray(data)) return false;
+// ─── Prompt ───────────────────────────────────────────────────────────────────
 
-  return data.every((fc, index) =>
-    typeof fc.id === "number" &&
-    fc.id === index + 1 &&
-    typeof fc.front === "string" &&
-    fc.front.trim().length > 0 &&
-    typeof fc.back === "string" &&
-    fc.back.trim().length > 0
-  );
-}
-
-/**
- * Build flashcard generation prompt
- */
 function buildFlashcardsPrompt(text: string, count: number): string {
-  return `Generate exactly ${count} flashcards from the following text.
+  return `Generate exactly ${count} flashcards from the text below.
 
-Output must be valid JSON only, in the following format:
-[
-  {
-    "id": 1,
-    "front": "What is photosynthesis?",
-    "back": "The process by which plants convert sunlight into energy"
-  },
-  {
-    "id": 2,
-    "front": "Question or concept here?",
-    "back": "Clear, concise answer here"
-  }
-]
+Rules:
+- "front" must be a question or concept prompt — keep it short and clear
+- "back" must be the correct answer or explanation
+- IDs start at 1 and increment by 1
+- Cards must be diverse and genuinely useful for studying the material
+- Cover different parts of the text — do not cluster around one section
 
-Important Rules:
-- "id" starts at 1 and increments by 1 for each flashcard.
-- "front" must always contain the question or prompt (short and clear).
-- "back" must always contain the correct answer or explanation.
-- Do NOT include explanations, introductions, comments, or code fences.
-- ONLY return valid JSON.
-- Flashcards should be diverse and useful for studying.
-
-Text to generate from:
+Source text:
+"""
 ${text}
-`;
+"""`;
 }
 
-/**
- * Parse and validate flashcards from AI response
- */
-function parseFlashcards(responseText: string): Flashcard[] | null {
-  try {
-    const cleanText = responseText
-      .replace(/```json/gi, "")
-      .replace(/```/g, "")
-      .trim();
-
-    const flashcards = JSON.parse(cleanText);
-
-    if (!validateFlashcards(flashcards)) {
-      console.error("Flashcard validation failed:", flashcards);
-      return null;
-    }
-
-    return flashcards;
-  } catch (err) {
-    console.error("Failed to parse flashcards JSON:", err);
-    return null;
-  }
-}
+// ─── Action ───────────────────────────────────────────────────────────────────
 
 /**
- * Generate flashcards from text using AI
- * 
- * @param text - Text to generate flashcards from (200-700,000 characters)
+ * Generate flashcards from text using AI with structured output.
+ *
+ * Uses generateObject + Zod schema — typed response, zero JSON parsing,
+ * no regex cleanup, no manual validation.
+ *
+ * @param text  - Source text (200–700,000 characters)
  * @param count - Number of flashcards to generate (default: 20)
- * @returns Array of flashcards or error
  */
 export async function generateFlashcards(
   text: string,
@@ -138,15 +108,18 @@ export async function generateFlashcards(
     const userId = session?.id ?? guestId;
 
     // Rate limiting
-    const { error: rateLimitError } = await rateLimit(userId, {
-      windowSize: VALIDATION.RATE_LIMIT.WINDOW_MS,
-      maxRequests: VALIDATION.RATE_LIMIT.MAX_REQUESTS,
-      lockoutPeriod: VALIDATION.RATE_LIMIT.LOCKOUT_MS,
-    }, true, "FLASHCARDS");
+    const { error: rateLimitError } = await rateLimit(
+      userId,
+      {
+        windowSize: VALIDATION.RATE_LIMIT.WINDOW_MS,
+        maxRequests: VALIDATION.RATE_LIMIT.MAX_REQUESTS,
+        lockoutPeriod: VALIDATION.RATE_LIMIT.LOCKOUT_MS,
+      },
+      true,
+      "FLASHCARDS"
+    );
 
-    if (rateLimitError) {
-      return flashcardError(rateLimitError);
-    }
+    if (rateLimitError) return flashcardError(rateLimitError);
 
     // Input validation
     const trimmedText = text.trim();
@@ -159,7 +132,7 @@ export async function generateFlashcards(
 
     if (text.length > VALIDATION.MAX_LENGTH) {
       return flashcardError(
-        `Text must have maximum ${VALIDATION.MAX_LENGTH.toLocaleString()} characters`
+        `Text must have a maximum of ${VALIDATION.MAX_LENGTH.toLocaleString()} characters.`
       );
     }
 
@@ -177,42 +150,42 @@ export async function generateFlashcards(
       const message = isGuest
         ? `You've reached your free daily limit (${limit}/${limit}). Sign in to unlock more flashcard generations!`
         : `Daily AI flashcard generation limit reached (${limit}/${limit}).`;
-
       return flashcardError(message);
     }
 
-    // Generate flashcards using Vercel AI SDK v4
-    const { text: generatedText } = await generateText({
-      model: openrouter(getModelForFeature('FLASHCARDS')),
+    // ── generateObject replaces generateText + parseFlashcards ───────────────
+    const { object } = await generateObject({
+      model: openrouter(getModelForFeature("FLASHCARDS")),
+      schema: flashcardsSchema,
       prompt: buildFlashcardsPrompt(text, count),
       temperature: 0.7,
       topP: 0.9,
     });
 
-    // Parse and validate flashcards
-    const flashcards = parseFlashcards(generatedText);
+    const flashcards = object.flashcards;
 
-    if (!flashcards) {
-      return flashcardError("Invalid flashcard format returned from AI");
+    if (!flashcards.length) {
+      return flashcardError("No flashcards were generated. Please try again.");
     }
 
-    // Prepare data for storage
-    const flashcardsData = {
-      userId,
-      flashcards,
-      originalText: text,
-      count,
-    };
+    // Normalise IDs in case the model drifts (1-based, sequential)
+    const normalised: Flashcard[] = flashcards.map((fc, i) => ({
+      id: i + 1,
+      front: fc.front.trim(),
+      back: fc.back.trim(),
+    }));
 
-    // Parallel operations: record usage and save flashcards
-    const promises = [
-      createFlashcardsUsage(userId),
-      session ? createUserFlashcards(flashcardsData) : null,
-    ].filter(Boolean);
+    // Parallel: record usage + persist (guests skip persistence)
+    await Promise.all(
+      [
+        createFlashcardsUsage(userId),
+        session
+          ? createUserFlashcards({ userId, flashcards: normalised, originalText: text, count })
+          : null,
+      ].filter(Boolean)
+    );
 
-    await Promise.all(promises);
-
-    return { error: null, flashcards };
+    return { error: null, flashcards: normalised };
 
   } catch (err) {
     console.error("Flashcard generation error:", err);
