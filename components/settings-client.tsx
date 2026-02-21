@@ -258,7 +258,7 @@ export function SettingsClient({ session }: { session: SessionType }) {
           <Section
             icon={User}
             title="Account Information"
-            description="Your current account details — read only."
+            description="Your current account details - read only."
           >
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <ReadonlyField label="Name" value={session.name ?? ""} />
@@ -550,7 +550,7 @@ export function SettingsClient({ session }: { session: SessionType }) {
                       </AlertDialogTitle>
                       <AlertDialogDescription>
                         This action is permanent and cannot be undone. All your
-                        data — including saved content, flashcards, and history —
+                        data - including saved content, flashcards, and history -
                         will be deleted immediately.
                       </AlertDialogDescription>
                     </AlertDialogHeader>

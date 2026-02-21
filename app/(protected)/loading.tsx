@@ -1,89 +1,90 @@
 import { Skeleton } from "@/components/ui/skeleton";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
 
 export default function ProtectedLoading() {
   return (
-    <div className="w-full">
-       {/* Hero Section Skeleton */}
-       <section className="pt-32 pb-12 px-4">
-        <div className="max-w-4xl mx-auto">
-            <div className="flex items-center space-x-4 mb-6">
-              <Skeleton className="h-14 w-14 rounded-2xl" />
-              <div>
-                <Skeleton className="h-10 w-48 mb-2" />
-                <Skeleton className="h-6 w-64" />
+    <div className="min-h-screen bg-background w-full">
+      {/* Header Skeleton */}
+      <header className="">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 py-4 flex items-center gap-3">
+          <Skeleton className="h-8 w-8 rounded-lg" />
+          <div className="space-y-1.5">
+            <Skeleton className="h-3 w-24" />
+            <Skeleton className="h-2 w-32" />
+          </div>
+        </div>
+      </header>
+
+      <main className="max-w-5xl mx-auto px-4 sm:px-6 py-10 space-y-6">
+        {/* Hero Skeleton */}
+        <div className="space-y-3">
+          <Skeleton className="h-10 w-64" />
+          <Skeleton className="h-6 w-full max-w-xl" />
+        </div>
+
+        {/* Section 1 Skeleton */}
+        <div className="rounded-2xl border border-border bg-card overflow-hidden">
+          <div className="flex items-start gap-3 px-8 py-5 border-b border-border/60">
+            <Skeleton className="h-8 w-8 rounded-lg shrink-0" />
+            <div className="space-y-2">
+              <Skeleton className="h-3 w-32" />
+              <Skeleton className="h-2 w-48" />
+            </div>
+          </div>
+          <div className="px-8 py-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Skeleton className="h-3 w-12" />
+                <Skeleton className="h-10 w-full rounded-xl" />
+              </div>
+              <div className="space-y-2">
+                <Skeleton className="h-3 w-12" />
+                <Skeleton className="h-10 w-full rounded-xl" />
               </div>
             </div>
+          </div>
         </div>
-      </section>
 
-      {/* Content Skeleton */}
-      <section className="pb-20 px-4">
-        <div className="max-w-4xl mx-auto space-y-8">
-            {/* Card 1 */}
-            <Card className="rounded-3xl">
-              <CardHeader>
-                 <Skeleton className="h-6 w-48" />
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Skeleton className="h-4 w-20" />
-                    <Skeleton className="h-10 w-full rounded-xl" />
-                  </div>
-                  <div className="space-y-2">
-                    <Skeleton className="h-4 w-20" />
-                    <Skeleton className="h-10 w-full rounded-xl" />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-             {/* Card 2 */}
-             <Card className="rounded-3xl">
-              <CardHeader>
-                 <Skeleton className="h-6 w-48" />
-              </CardHeader>
-              <CardContent className="space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Skeleton className="h-4 w-32" />
-                        <Skeleton className="h-10 w-full rounded-xl" />
-                      </div>
-                       <div className="space-y-2">
-                        <Skeleton className="h-4 w-32" />
-                        <Skeleton className="h-10 w-full rounded-xl" />
-                      </div>
-                  </div>
-                   <Skeleton className="h-12 w-32 rounded-xl" />
-              </CardContent>
-            </Card>
-            
-             {/* Card 3 */}
-             <Card className="rounded-3xl">
-              <CardHeader>
-                 <Skeleton className="h-6 w-48" />
-              </CardHeader>
-              <CardContent className="space-y-6">
-                 <div className="space-y-2">
-                    <Skeleton className="h-4 w-32" />
-                    <Skeleton className="h-10 w-full rounded-xl" />
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Skeleton className="h-4 w-32" />
-                        <Skeleton className="h-10 w-full rounded-xl" />
-                      </div>
-                       <div className="space-y-2">
-                        <Skeleton className="h-4 w-32" />
-                        <Skeleton className="h-10 w-full rounded-xl" />
-                      </div>
-                  </div>
-                   <Skeleton className="h-12 w-32 rounded-xl" />
-              </CardContent>
-            </Card>
+        {/* Section 2 Skeleton */}
+        <div className="rounded-2xl border border-border bg-card overflow-hidden">
+           <div className="flex items-start gap-3 px-8 py-5 border-b border-border/60">
+            <Skeleton className="h-8 w-8 rounded-lg shrink-0" />
+            <div className="space-y-2">
+              <Skeleton className="h-3 w-40" />
+              <Skeleton className="h-2 w-56" />
+            </div>
+          </div>
+          <div className="px-8 py-6 space-y-5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+               <div className="space-y-2">
+                <Skeleton className="h-3 w-16" />
+                <Skeleton className="h-10 w-full rounded-xl" />
+              </div>
+              <div className="space-y-2">
+                <Skeleton className="h-3 w-16" />
+                <Skeleton className="h-10 w-full rounded-xl" />
+              </div>
+            </div>
+            <Skeleton className="h-9 w-32 rounded-xl" />
+          </div>
         </div>
-      </section>
+
+        {/* Danger Zone Skeleton */}
+        <div className="rounded-2xl border border-destructive/30 bg-card overflow-hidden">
+           <div className="flex items-start gap-3 px-8 py-5 border-b border-destructive/20 bg-destructive/5">
+            <Skeleton className="h-8 w-8 rounded-lg shrink-0" />
+            <div className="space-y-2">
+              <Skeleton className="h-3 w-24" />
+              <Skeleton className="h-2 w-48" />
+            </div>
+          </div>
+          <div className="px-8 py-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+               <Skeleton className="h-14 w-full rounded-xl" />
+               <Skeleton className="h-14 w-full rounded-xl" />
+            </div>
+          </div>
+        </div>
+      </main>
     </div>
   );
 }

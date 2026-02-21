@@ -245,7 +245,7 @@ export function WritingCompanionClient() {
           </h2>
           <p className="text-muted-foreground text-lg max-w-xl">
             Fix grammar, rephrase for any tone, and listen back to your writing
-            — all in one place.
+            - all in one place.
           </p>
         </motion.div>
 
@@ -528,7 +528,7 @@ export function WritingCompanionClient() {
                 icon: RefreshCw,
                 step: "02",
                 title: "Rephrase the tone",
-                body: "Choose a tone — formal, academic, casual, or friendly — then rephrase your text instantly.",
+                body: "Choose a tone - formal, academic, casual, or friendly - then rephrase your text instantly.",
               },
               {
                 icon: Volume2,

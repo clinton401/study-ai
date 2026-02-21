@@ -43,12 +43,12 @@ export function TermPaperViewer({
   };
 
   return (
-    <div className="fixed top-0 left-0 w-full h-dvh z-50 bg-background flex flex-col">
+    <div className="fixed bottom-0  left-0 w-full h-dvh z-50 bg-background flex flex-col">
       {/* Header */}
-      <div className="shrink-0 border-b border-border/60 bg-background/95 backdrop-blur-sm px-4 sm:px-6 py-4">
-        <div className="flex items-start sm:items-center justify-between flex-wrap gap-3">
+      <div className="shrink-0 border-b flex-wrap flex border-border/60 bg-background/95 backdrop-blur-sm px-4 sm:px-6 py-4">
+        <div className="flex items-start sm:items-center w-full sm:flex-row flex-col justify-between flex-wrap gap-3">
           {/* Left: back + title + badges */}
-          <div className="flex items-center gap-3 min-w-0 flex-1">
+          <div className="flex items-center  gap-3 min-w-0 flex-1">
             <Button
               variant="ghost"
               size="icon"
@@ -72,7 +72,7 @@ export function TermPaperViewer({
                   {paper.length}
                 </span>
                 <span className="text-xs text-muted-foreground tabular-nums">
-                  {paper.wordCount.toLocaleString()} words
+                  {paper.wordCount?.toLocaleString()} words
                 </span>
                 <span className="text-xs text-muted-foreground tabular-nums">
                   {new Date(paper.createdAt).toLocaleDateString()}
@@ -82,7 +82,7 @@ export function TermPaperViewer({
           </div>
 
           {/* Right: actions */}
-          <div className="flex items-center gap-2 shrink-0">
+          <div className="flex items-center gap-2 flex-wrap shrink-0">
             <EditContentModal
               content={paper.content}
               invalidateQuery={invalidateQuery}

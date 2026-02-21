@@ -214,7 +214,7 @@ export function AIStudyToolsClient() {
         >
           <h2 className="text-4xl font-bold tracking-tight">Study smarter.</h2>
           <p className="text-muted-foreground text-lg max-w-xl">
-            Upload your notes or paste text — then summarise, quiz yourself, or
+            Upload your notes or paste text - then summarise, quiz yourself, or
             generate flashcards instantly.
           </p>
         </motion.div>
@@ -492,7 +492,7 @@ export function AIStudyToolsClient() {
                 icon: Upload,
                 step: "01",
                 title: "Upload your material",
-                body: "Drop a PDF, DOCX, or TXT file — or paste your notes directly into the text box.",
+                body: "Drop a PDF, DOCX, or TXT file - or paste your notes directly into the text box.",
               },
               {
                 icon: Sparkles,

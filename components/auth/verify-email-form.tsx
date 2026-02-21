@@ -1,221 +1,214 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { motion } from "framer-motion"
-import { Mail, CheckCircle } from "lucide-react"
-import { useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { InputOTP, InputOTPGroup, InputOTPSlot, InputOTPSeparator  } from "@/components/ui/input-otp"
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from "@/components/ui/form"
-import { verifyEmailSchema, type VerifyEmailFormData } from "@/lib/validations/auth"
+import { useState } from "react";
+import { Mail, CheckCircle } from "lucide-react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Button } from "@/components/ui/button";
+import {
+  InputOTP,
+  InputOTPGroup,
+  InputOTPSlot,
+  InputOTPSeparator,
+} from "@/components/ui/input-otp";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import {
+  verifyEmailSchema,
+  type VerifyEmailFormData,
+} from "@/lib/validations/auth";
 import Link from "next/link";
-import useCountdown, {COUNTDOWN_DURATION} from "@/hooks/use-countdown";
-import {useParams} from "next/navigation";
+import useCountdown, { COUNTDOWN_DURATION } from "@/hooks/use-countdown";
+import { useParams } from "next/navigation";
 import { sendVerificationCode } from "@/actions/send-verification-code";
 import { verifyEmail } from "@/actions/verify-email";
 import createToast from "@/hooks/create-toast";
 import { ERROR_MESSAGES } from "@/lib/error-messages";
 import { LoadingButton } from "@/components/loading-button";
-import { RegenerateButton } from "../regenerate-button"
+import { RegenerateButton } from "../regenerate-button";
+import { AuthCard, authLabelCn } from "./auth-card";
+import { motion } from "framer-motion";
 
 export function VerifyEmailForm() {
-  const [isLoading, setIsLoading] = useState(false)
-  const [isVerified, setIsVerified] = useState(false)
+  const [isLoading, setIsLoading] = useState(false);
+  const [isVerified, setIsVerified] = useState(false);
   const [resendLoading, setResendLoading] = useState(false);
-  const {id} = useParams();
-  const  { isNewClicked: isResendClicked, setIsNewClicked: setIsResendClicked, countdown } = useCountdown();
+  const { id } = useParams();
+  const {
+    isNewClicked: isResendClicked,
+    setIsNewClicked: setIsResendClicked,
+    countdown,
+  } = useCountdown();
   const { createError, createSimple } = createToast();
+
   const form = useForm<VerifyEmailFormData>({
     resolver: zodResolver(verifyEmailSchema),
-    defaultValues: {
-      otp: "",
-    },
-  })
+    defaultValues: { otp: "" },
+  });
+
+  const resolveUserId = (): string | null => {
+    const raw = Array.isArray(id) ? id[0] : id;
+    return raw && typeof raw === "string" ? raw : null;
+  };
 
   const onSubmit = async (data: VerifyEmailFormData) => {
-    const userId = Array.isArray(id) ? id[0] : id;
-    if(!userId || typeof userId !== "string" ) return createError("Invalid User ID");
-    
+    const userId = resolveUserId();
+    if (!userId) return createError("Invalid User ID");
     try {
       setIsLoading(true);
-      const {error} = await verifyEmail(userId, data);
-      if(error) return createError(error);
-      
-      setIsVerified(true)
-    } catch (error) {
-      console.error("Verification error:", error)
-      createError(ERROR_MESSAGES.INTERNAL_SERVER_ERROR)
+      const { error } = await verifyEmail(userId, data);
+      if (error) return createError(error);
+      setIsVerified(true);
+    } catch {
+      createError(ERROR_MESSAGES.INTERNAL_SERVER_ERROR);
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   const handleResendOTP = async () => {
-if (countdown < COUNTDOWN_DURATION)
-  return createError("Please wait before requesting a new code.");
-    const userId = Array.isArray(id) ? id[0] : id;
-    if (!userId || typeof userId !== "string")
-      return createError("Invalid User ID");
-    
+    if (countdown < COUNTDOWN_DURATION)
+      return createError("Please wait before requesting a new code.");
+    const userId = resolveUserId();
+    if (!userId) return createError("Invalid User ID");
     try {
       setResendLoading(true);
       setIsResendClicked(false);
-     
-      const {error, success} = await sendVerificationCode(userId);
-      if(error || !success) return createError(error || ERROR_MESSAGES.UNKNOWN_ERROR);
+      const { error, success } = await sendVerificationCode(userId);
+      if (error || !success)
+        return createError(error || ERROR_MESSAGES.UNKNOWN_ERROR);
       createSimple(success);
-      
       setIsResendClicked(true);
-    } catch (error) {
-      console.error("Resend error:", error);
-       createError(ERROR_MESSAGES.INTERNAL_SERVER_ERROR);
+    } catch {
+      createError(ERROR_MESSAGES.INTERNAL_SERVER_ERROR);
     } finally {
-      setResendLoading(false)
+      setResendLoading(false);
     }
-  }
+  };
+
+  // ── Verified state ─────────────────────────────────────────────────────────
 
   if (isVerified) {
     return (
       <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
+        initial={{ opacity: 0, scale: 0.97 }}
         animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.5 }}
+        transition={{ duration: 0.35 }}
         className="w-full max-w-md"
       >
-        <Card className=" backdrop-blur-sm border-0 shadow-2xl rounded-3xl">
-          <CardHeader className="text-center pb-8">
-            <div className="flex justify-center mb-6">
-              <div className="bg-gradient-to-r from-green-600 to-emerald-600 p-3 rounded-2xl">
-                <CheckCircle className="h-8 w-8 text-white" />
-              </div>
+        <div className="rounded-3xl border border-border bg-card shadow-xl overflow-hidden">
+          <div className="flex flex-col items-center text-center px-8 pt-10 pb-6">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-green-600 mb-5">
+              <CheckCircle className="h-6 w-6 text-white" />
             </div>
-            <CardTitle className="text-3xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
+            <h1 className="text-2xl font-bold tracking-tight text-green-600 dark:text-green-400">
               Email Verified!
-            </CardTitle>
-            <p className="text-gray-600 dark:text-gray-300 mt-2">
-              Your account has been successfully verified. You can now access all StudyAI features.
+            </h1>
+            <p className="text-sm text-muted-foreground mt-1.5 max-w-xs leading-relaxed">
+              Your account is now active. You can sign in and start using
+              StudyAI.
             </p>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-xl p-6 text-center">
-              <CheckCircle className="h-12 w-12 text-green-600 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-2">Welcome to StudyAI!</h3>
-              <p className="text-gray-600 dark:text-gray-300 text-sm">
-                Your account is now active and ready to use. Start exploring our AI-powered learning tools.
+          </div>
+          <div className="px-8 pb-10 space-y-4">
+            <div className="rounded-xl border border-green-200 dark:border-green-800 bg-green-50 dark:bg-green-950/20 px-4 py-4 text-center space-y-1">
+              <CheckCircle className="h-8 w-8 text-green-600 mx-auto" />
+              <p className="text-sm font-semibold text-foreground">
+                Welcome to StudyAI!
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Explore AI-powered flashcards, summaries, and writing tools.
               </p>
             </div>
-
-            <Button
-              asChild
-              className="w-full h-12  text-white rounded-xl text-lg font-medium"
-            >
+            <Button asChild className="w-full h-10 rounded-xl text-sm">
               <Link href="/login">Continue to Sign In</Link>
             </Button>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </motion.div>
-    )
+    );
   }
 
+  // ── Default state ──────────────────────────────────────────────────────────
+
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 30 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.8 }}
-      className="w-full max-w-md"
+    <AuthCard
+      icon={Mail}
+      title="Verify Your Email"
+      description="Enter the 6-digit code we sent to your email address."
     >
-      <Card className=" backdrop-blur-sm border-0 shadow-2xl rounded-3xl">
-        <CardHeader className="text-center pb-8">
-          <div className="flex justify-center mb-6">
-            <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-3 rounded-2xl">
-              <Mail className="h-8 w-8 text-white" />
-            </div>
-          </div>
-          <CardTitle className="text-3xl font-bold ">
-            Verify Your Email
-          </CardTitle>
-          <p className="text-gray-600 dark:text-gray-300 mt-2">
-            Enter the 6-digit code we sent to your email address
-          </p>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              <FormField
-                control={form.control}
-                name="otp"
-                render={({ field }) => (
-                  <FormItem className="space-y-4">
-                    <FormLabel className="text-sm font-medium text-gray-700 dark:text-gray-300 text-center block">
-                      Verification Code
-                    </FormLabel>
-                    <FormControl>
-                      <div className="flex justify-center">
-                        <InputOTP maxLength={6} {...field}>
-                          <InputOTPGroup>
-                            <InputOTPSlot className="border-gray-200 dark:border-gray-700 focus:border-blue-500 dark:focus:border-blue-400" index={0} />
-                            <InputOTPSlot className="border-gray-200 dark:border-gray-700 focus:border-blue-500 dark:focus:border-blue-400" index={1} />
-                            <InputOTPSlot className="border-gray-200 dark:border-gray-700 focus:border-blue-500 dark:focus:border-blue-400" index={2} />
-                          </InputOTPGroup>
-                          <InputOTPSeparator />
-                          <InputOTPGroup>
-                            <InputOTPSlot className="border-gray-200 dark:border-gray-700 focus:border-blue-500 dark:focus:border-blue-400" index={3} />
-                            <InputOTPSlot className="border-gray-200 dark:border-gray-700 focus:border-blue-500 dark:focus:border-blue-400" index={4} />
-                            <InputOTPSlot className="border-gray-200 dark:border-gray-700 focus:border-blue-500 dark:focus:border-blue-400" index={5} />
-                          </InputOTPGroup>
-                        </InputOTP>
-                      </div>
-                    </FormControl>
-                    <FormDescription className="text-center text-sm text-gray-500 dark:text-gray-400">
-                      Please enter the 6-digit code sent to your email
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
+          <FormField
+            control={form.control}
+            name="otp"
+            render={({ field }) => (
+              <FormItem className="space-y-3">
+                <FormLabel className={`${authLabelCn} block text-center`}>
+                  Verification Code
+                </FormLabel>
+                <FormControl>
+                  <div className="flex justify-center">
+                    <InputOTP maxLength={6} {...field}>
+                      <InputOTPGroup>
+                        <InputOTPSlot index={0} className="rounded-xl" />
+                        <InputOTPSlot index={1} className="rounded-xl" />
+                        <InputOTPSlot index={2} className="rounded-xl" />
+                      </InputOTPGroup>
+                      <InputOTPSeparator />
+                      <InputOTPGroup>
+                        <InputOTPSlot index={3} className="rounded-xl" />
+                        <InputOTPSlot index={4} className="rounded-xl" />
+                        <InputOTPSlot index={5} className="rounded-xl" />
+                      </InputOTPGroup>
+                    </InputOTP>
+                  </div>
+                </FormControl>
+                <p className="text-center text-xs text-muted-foreground">
+                  Please enter the 6-digit code sent to your email.
+                </p>
+                <FormMessage className="text-xs text-center" />
+              </FormItem>
+            )}
+          />
 
-              {/* <Button
-                type="submit"
-                disabled={isLoading || form.watch("otp").length !== 6}
-                className="w-full h-12 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-xl text-lg font-medium"
-              >
-                {isLoading ? "Verifying..." : "Verify Email"}
-              </Button> */}
-               <LoadingButton isPending={isLoading} disabled={isLoading || form.watch("otp").length !== 6 || resendLoading}  message="Verify Email "/>
-            </form>
-          </Form>
+          <LoadingButton
+            isPending={isLoading}
+            disabled={
+              isLoading || form.watch("otp").length !== 6 || resendLoading
+            }
+            message="Verify Email"
+          />
+        </form>
+      </Form>
 
-          <div className="space-y-4">
-            <p className="text-sm text-gray-600 dark:text-gray-300 text-center">
-              Didn&apos;t receive the code? Check your spam folder or
-            </p>
+      {/* Resend */}
+      <div className="space-y-3">
+        <p className="text-xs text-muted-foreground text-center">
+          Didn&apos;t receive the code? Check your spam folder or
+        </p>
+        <RegenerateButton
+          isPending={resendLoading}
+          disabled={isLoading || resendLoading}
+          isResendClicked={isResendClicked}
+          resendCode={handleResendOTP}
+          countdown={countdown}
+        />
+      </div>
 
-            {/* <Button
-              onClick={handleResendOTP}
-              disabled={resendLoading}
-              variant="outline"
-              className="w-full h-12 rounded-xl border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
-            >
-              {resendLoading ? "Sending..." : "Resend Code"}
-            </Button> */}
-            <RegenerateButton isPending={resendLoading} disabled={isLoading || resendLoading} isResendClicked={isResendClicked} resendCode={handleResendOTP} countdown={countdown} />
-          </div>
-
-          <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
-            <p className="text-sm text-gray-600 dark:text-gray-300 text-center">
-              Need help?{" "}
-              <Link
-                href="/login"
-                className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 font-medium"
-              >
-                Back to Sign In
-              </Link>
-            </p>
-          </div>
-        </CardContent>
-      </Card>
-    </motion.div>
+      <div className="pt-1 border-t border-border/60 text-center">
+        <Link
+          href="/login"
+          className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+        >
+          Back to Sign In
+        </Link>
+      </div>
+    </AuthCard>
   );
 }

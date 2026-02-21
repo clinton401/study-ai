@@ -1,4 +1,4 @@
-import Footer from "@/components/footer";
+import {Footer} from "@/components/footer";
 import { ParentComp } from "@/components/parent-comp";
 import { TanstackQueryClient } from "@/components/tanstack-query-client";
 import { ThemeProvider } from "@/components/theme-provider";
@@ -115,7 +115,7 @@ export default async function RootLayout({
             <SpeedInsights />
             <Toaster />
             <ParentComp session={session}>
-              <div className="w-full overflow-x-hidden pb-8 flex flex-col items-center   ">
+              <div className="w-full overflow-x-hidden pb-8 px-4 flex flex-col items-center   ">
                 {children}
               </div>
               <Footer />

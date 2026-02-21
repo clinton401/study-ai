@@ -311,7 +311,7 @@ export function ContentGeneratorClient() {
               What would you like to write?
             </h2>
             <p className="text-muted-foreground text-lg max-w-xl">
-              Tell us the type, tone, and length — then describe your topic.
+              Tell us the type, tone, and length - then describe your topic.
               We&apos;ll handle the rest.
             </p>
           </div>
@@ -532,7 +532,7 @@ export function ContentGeneratorClient() {
                 icon: FileText,
                 step: "01",
                 title: "Choose a type",
-                body: "Essay, letter, or full term paper — pick the format that fits.",
+                body: "Essay, letter, or full term paper - pick the format that fits.",
               },
               {
                 icon: Users,
@@ -544,7 +544,7 @@ export function ContentGeneratorClient() {
                 icon: BookOpen,
                 step: "03",
                 title: "Pick a length",
-                body: "Short, medium, or long — we calibrate depth accordingly.",
+                body: "Short, medium, or long - we calibrate depth accordingly.",
               },
               {
                 icon: Sparkles,
