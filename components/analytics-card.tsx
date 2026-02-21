@@ -197,7 +197,7 @@ export function AnalyticsCards() {
   return (
     <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
       {cards.map((card) => (
-        <StatCard key={card.label} {...card} />
+        <StatCard key={card.label} {...card} meta={ card.text} />
       ))}
     </div>
   );
