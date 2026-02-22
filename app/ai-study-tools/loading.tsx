@@ -2,7 +2,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export default function AIStudyToolsLoading() {
   return (
-    <div className="min-h-screen bg-background w-full">
+    <div className="min-h-screen bg-background w-full overflow-hidden">
       {/* Header Skeleton */}
       <header className="">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 py-4 flex items-center gap-3">
@@ -14,7 +14,7 @@ export default function AIStudyToolsLoading() {
         </div>
       </header>
 
-      <main className="max-w-5xl mx-auto w-full px-4 sm:px-6 py-12 space-y-6">
+      <main className="max-w-5xl mx-auto px-4 sm:px-6 py-12 space-y-6">
         {/* Hero Skeleton */}
         <div className="space-y-3">
           <Skeleton className="h-10 w-64" />
