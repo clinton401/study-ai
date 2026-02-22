@@ -9,6 +9,7 @@ import { validatePassword } from "@/lib/password-utils";
 
 import { findUserByEmail, findUserById, updateUser, createUser } from "@/data/user";
 export const { handlers, signIn, signOut, auth } = NextAuth({
+  ...authConfig,
   session: {
     strategy: "jwt",
   },
@@ -138,5 +139,4 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       return session;
     },
   },
-  ...authConfig,
 });
