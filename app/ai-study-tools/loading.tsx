@@ -14,7 +14,7 @@ export default function AIStudyToolsLoading() {
         </div>
       </header>
 
-      <main className="max-w-5xl mx-auto px-4 sm:px-6 py-12 space-y-6">
+      <main className="max-w-5xl mx-auto w-full px-4 sm:px-6 py-12 space-y-6">
         {/* Hero Skeleton */}
         <div className="space-y-3">
           <Skeleton className="h-10 w-64" />
@@ -46,10 +46,10 @@ export default function AIStudyToolsLoading() {
                 <Skeleton className="h-5 w-5 rounded-full" />
                 <Skeleton className="h-4 w-32" />
              </div>
-             <div className="flex gap-3">
-                <Skeleton className="h-14 flex-1 rounded-xl" />
-                <Skeleton className="h-14 flex-1 rounded-xl" />
-                <Skeleton className="h-14 flex-1 rounded-xl" />
+             <div className="flex flex-wrap gap-3">
+                <Skeleton className="h-14 flex-1 min-w-[80px] rounded-xl" />
+                <Skeleton className="h-14 flex-1 min-w-[80px] rounded-xl" />
+                <Skeleton className="h-14 flex-1 min-w-[80px] rounded-xl" />
              </div>
           </div>
 
