@@ -1,5 +1,4 @@
 import ReactMarkdown from "react-markdown";
-import { cn } from "@/lib/utils";
 
 type Props = {
   content: string | { type: string; text: string }[];
