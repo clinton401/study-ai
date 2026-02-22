@@ -62,6 +62,7 @@
     "html2pdf.js": "^0.10.3",
     "input-otp": "latest",
     "jspdf": "^3.0.1",
+    "juice": "^11.1.1",
     "lucide-react": "^0.454.0",
     "mammoth": "^1.9.1",
     "marked": "^15.0.12",

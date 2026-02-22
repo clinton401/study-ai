@@ -115,7 +115,7 @@ export function TermPaperCard({
 
       {/* Footer */}
       <div className="flex items-center justify-between px-5 py-3 border-t border-border/50">
-        <span className="text-xs text-muted-foreground tabular-nums">{paper.wordCount.toLocaleString()} words</span>
+        <span className="text-xs text-muted-foreground tabular-nums">{paper.wordCount?.toLocaleString()} words</span>
         <span className="text-xs text-muted-foreground tabular-nums">
           {new Date(paper.createdAt).toLocaleDateString()}
         </span>
