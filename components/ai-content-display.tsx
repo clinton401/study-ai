@@ -6,17 +6,16 @@ type Props = {
 };
 
 export const AIContentDisplay = ({ content, chatPage = false }: Props) => {
-  // Normalize Vercel AI SDK content into a string
-  const normalized =
-    Array.isArray(content)
-      ? content.map((c) => ("text" in c ? c.text : "")).join("\n")
-      : content;
+  const normalized = Array.isArray(content)
+    ? content.map((c) => ("text" in c ? c.text : "")).join("\n")
+    : content;
 
   function sanitizeMarkdown(c: string) {
     return c
-      .replace(/^```(?:markdown)?\s*/i, "") // remove ```markdown
-      .replace(/^```/, "")                 // remove ```
-      .replace(/```$/, "");                // remove trailing ```
+      .replace(/^```(?:markdown)?\s*/i, "")
+      .replace(/^```/, "")
+      .replace(/```$/, "")
+      .trim();
   }
 
   const safeContent = sanitizeMarkdown(normalized);
@@ -29,46 +28,97 @@ export const AIContentDisplay = ({ content, chatPage = false }: Props) => {
     <ReactMarkdown
       components={{
         h1: ({ node, ...props }) => (
-          <h1 className="text-4xl font-black font-serif my-4" {...props} />
-        ),
-        h2: ({ node, ...props }) => (
-          <h2 className="text-3xl font-semibold font-serif my-3" {...props} />
-        ),
-        h3: ({ node, ...props }) => (
-          <h3 className="text-2xl font-semibold font-serif my-2" {...props} />
-        ),
-        p: ({ node, ...props }) => (
-          <p className="text-base leading-relaxed mb-4" {...props} />
-        ),
-        strong: ({ node, ...props }) => (
-          <strong className="font-semibold" {...props} />
-        ),
-        em: ({ node, ...props }) => <em className="italic" {...props} />,
-        ul: ({ node, ...props }) => (
-          <ul className="list-disc ml-6 mb-4" {...props} />
-        ),
-        ol: ({ node, ...props }) => (
-          <ol className="list-decimal ml-6 mb-4" {...props} />
-        ),
-        li: ({ node, ...props }) => <li className="mb-1" {...props} />,
-        blockquote: ({ node, ...props }) => (
-          <blockquote
-            className="border-l-4 border-gray-400 pl-4 italic text-gray-600 my-4"
+          <h1
+            className="text-2xl font-bold tracking-tight text-foreground mt-8 mb-3 first:mt-0"
             {...props}
           />
+        ),
+        h2: ({ node, ...props }) => (
+          <h2
+            className="text-xl font-semibold tracking-tight text-foreground mt-7 mb-2.5"
+            {...props}
+          />
+        ),
+        h3: ({ node, ...props }) => (
+          <h3
+            className="text-base font-semibold text-foreground mt-5 mb-2"
+            {...props}
+          />
+        ),
+        h4: ({ node, ...props }) => (
+          <h4
+            className="text-sm font-semibold uppercase tracking-wide text-muted-foreground mt-4 mb-1.5"
+            {...props}
+          />
+        ),
+        p: ({ node, ...props }) => (
+          <p
+            className="text-sm leading-7 text-foreground/90 mb-4 last:mb-0"
+            {...props}
+          />
+        ),
+        strong: ({ node, ...props }) => (
+          <strong className="font-semibold text-foreground" {...props} />
+        ),
+        em: ({ node, ...props }) => (
+          <em className="italic text-foreground/80" {...props} />
+        ),
+        ul: ({ node, ...props }) => (
+          <ul
+            className="list-disc ml-5 mb-4 space-y-1.5 text-sm text-foreground/90"
+            {...props}
+          />
+        ),
+        ol: ({ node, ...props }) => (
+          <ol
+            className="list-decimal ml-5 mb-4 space-y-1.5 text-sm text-foreground/90"
+            {...props}
+          />
+        ),
+        li: ({ node, ...props }) => (
+          <li className="leading-relaxed" {...props} />
+        ),
+        blockquote: ({ node, ...props }) => (
+          <blockquote
+            className="border-l-2 border-foreground/30 pl-4 my-4 italic text-muted-foreground text-sm"
+            {...props}
+          />
+        ),
+        hr: ({ node, ...props }) => (
+          <hr className="my-6 border-border/60" {...props} />
         ),
         // @ts-ignore
         code: ({ node, inline, ...props }) =>
           inline ? (
             <code
-              className="bg-gray-100 px-1 rounded text-sm font-mono"
+              className="bg-muted px-1.5 py-0.5 rounded text-xs font-mono text-foreground"
               {...props}
             />
           ) : (
-            <pre className="bg-gray-900 text-white p-4 rounded my-4 overflow-x-auto">
-              <code {...props} />
+            <pre className="bg-muted rounded-lg p-4 my-4 overflow-x-auto text-xs">
+              <code className="font-mono text-foreground" {...props} />
             </pre>
           ),
+        table: ({ node, ...props }) => (
+          <div className="overflow-x-auto my-4">
+            <table
+              className="w-full text-sm border-collapse"
+              {...props}
+            />
+          </div>
+        ),
+        th: ({ node, ...props }) => (
+          <th
+            className="border border-border px-3 py-2 text-left font-semibold text-xs uppercase tracking-wide bg-muted"
+            {...props}
+          />
+        ),
+        td: ({ node, ...props }) => (
+          <td
+            className="border border-border px-3 py-2 text-sm text-foreground/90"
+            {...props}
+          />
+        ),
       }}
     >
       {safeContent}

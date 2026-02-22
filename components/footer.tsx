@@ -1,90 +1,118 @@
-"use client"
-import { GraduationCap, Twitter, Github, Linkedin } from "lucide-react"
 import Link from "next/link";
-// import {usePathname} from "next/navigation"
+import { Logo } from "@/components/logo";
+import { Github, Twitter } from "lucide-react";
 
+const links = {
+  product: [
+    { name: "Features", href: "/features" },
+    { name: "Content Generator", href: "/content-generator" },
+    { name: "Writing Companion", href: "/writing-companion" },
+    { name: "Note Summarizer", href: "/ai-study-tools" },
+  ],
+  account: [
+    { name: "Sign In", href: "/login" },
+    { name: "Register", href: "/register" },
+    { name: "Dashboard", href: "/dashboard" },
+    { name: "Settings", href: "/settings" },
+  ],
+};
 
-export default function Footer() {
-  // const pathname = usePathname();
-  
-  // if (pathname === "/dashboard") return;
-  const year = new Date().getFullYear()
+export function Footer() {
+  const year = new Date().getFullYear();
+
   return (
-    <footer className=" border-t  py-8">
-      <div className="max-w-7xl mx-auto px-4">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {/* Logo and description */}
-          <div className="col-span-1 md:col-span-2">
-            <div className="flex items-center space-x-2 mb-4">
-              <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-2 rounded-xl">
-                <GraduationCap className="h-6 w-6 text-white" />
-              </div>
-              <span className="text-xl font-bold">StudyAI</span>
-            </div>
-            <p className="text-gray-400 mb-6 max-w-md">
-              Empowering students worldwide with AI-powered learning tools. Study smarter, not harder.
+    <footer className="border-t border-border/60 bg-background">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-10">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10">
+          {/* Brand */}
+          <div className="lg:col-span-2 space-y-4">
+            <Logo size="md" />
+            <p className="text-sm text-muted-foreground max-w-xs leading-relaxed">
+              AI-powered learning tools for students. Summarise notes, generate
+              essays, and improve your writing - all in one place.
             </p>
-            <div className="flex space-x-4">
-            <a
-  href="https://twitter.com/phillips464"
-  target="_blank"
-  rel="noopener noreferrer"
->
-  <Twitter className="h-5 w-5 text-gray-400 hover:text-white cursor-pointer transition-colors" />
-</a>
-
-<a
-  href="https://github.com/clinton401"
-  target="_blank"
-  rel="noopener noreferrer"
->
-  <Github className="h-5 w-5 text-gray-400 hover:text-white cursor-pointer transition-colors" />
-</a>
-
-<a
-  href="https://www.linkedin.com/in/clinton-phillips-316a42250/"
-  target="_blank"
-  rel="noopener noreferrer"
->
-  <Linkedin className="h-5 w-5 text-gray-400 hover:text-white cursor-pointer transition-colors" />
-</a>
-
+            <div className="flex items-center gap-3 pt-1">
+              <a
+                href="https://twitter.com"
+                target="_blank"
+                rel="noreferrer"
+                aria-label="Twitter"
+                className="flex h-8 w-8 items-center justify-center rounded-lg border border-border hover:border-foreground/30 hover:bg-accent transition-colors"
+              >
+                <Twitter className="h-3.5 w-3.5" />
+              </a>
+              <a
+                href="https://github.com"
+                target="_blank"
+                rel="noreferrer"
+                aria-label="GitHub"
+                className="flex h-8 w-8 items-center justify-center rounded-lg border border-border hover:border-foreground/30 hover:bg-accent transition-colors"
+              >
+                <Github className="h-3.5 w-3.5" />
+              </a>
             </div>
           </div>
 
-          {/* Quick Links */}
-          <div>
-            <h3 className="font-semibold mb-4">Quick Links</h3>
-            <ul className="space-y-2 text-gray-400">
-              <li>
-                <Link href="/" className="hover:text-white transition-colors">
-                  Home
-                </Link>
-              </li>
-              <li>
-                <Link href="/features" className="hover:text-white transition-colors">
-                  Features
-                </Link>
-              </li>
-              <li>
-                <Link href="/writing-companion" className="hover:text-white transition-colors">
-                  Writing Companion
-                </Link>
-              </li>
-              <li>
-                <Link href="/content-generator" className="hover:text-white transition-colors">
-                  Content Generator
-                </Link>
-              </li>
+          {/* Product links */}
+          <div className="space-y-4 py-4 ">
+            <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+              Product
+            </p>
+            <ul className="space-y-2.5">
+              {links.product.map((l) => (
+                <li key={l.name}>
+                  <Link
+                    href={l.href}
+                    className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    {l.name}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
 
+          {/* Account links */}
+          <div className="space-y-4">
+            <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+              Account
+            </p>
+            <ul className="space-y-2.5">
+              {links.account.map((l) => (
+                <li key={l.name}>
+                  <Link
+                    href={l.href}
+                    className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    {l.name}
+                  </Link>
+                </li>
+              ))}
+            </ul>
           </div>
+        </div>
 
-        <div className=" pt-4 text-center text-gray-400">
-          <p>&copy; {year} StudyAI. All rights reserved.</p>
+        {/* Bottom bar */}
+        <div className="mt-10 pt-6  border-t border-border/60 flex flex-col sm:flex-row items-center justify-between gap-3">
+          <p className="text-xs text-muted-foreground">
+            © {year} StudyAI. All rights reserved.
+          </p>
+          <div className="flex items-center gap-5">
+            <Link
+              href="/privacy"
+              className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+            >
+              Privacy
+            </Link>
+            <Link
+              href="/terms"
+              className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+            >
+              Terms
+            </Link>
+          </div>
         </div>
       </div>
     </footer>
-  )
+  );
 }

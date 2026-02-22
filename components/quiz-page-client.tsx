@@ -2,7 +2,7 @@
 
 import { GeneralPageUI } from "@/components/general-page-ui";
 import { FullUserQuestion } from "@/models/user-questions-schema";
-import {QuizSetCard} from "@/components/quiz-set-card";
+import { QuizSetCard } from "@/components/quiz-set-card";
 import { QuizViewer } from "@/components/quiz-viewer";
 import { SummaryCardSkeleton } from "@/components/summary-card-skeleton";
 
@@ -35,7 +35,7 @@ export function QuizPageClient() {
       skeleton={<SummaryCardSkeleton />}
       renderCard={renderCard}
       renderViewer={renderViewer}
-      emptyText="No quizzes found."
+      emptyText="No quiz sets yet. Generate one from the Study Tools."
     />
   );
 }

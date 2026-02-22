@@ -1,38 +1,31 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   PenTool,
   FileText,
   Mail,
   Sparkles,
   Loader2,
-  Wand2,
   BookOpen,
   Users,
   Briefcase,
   GraduationCap,
   Notebook,
+  ArrowRight,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { CopyExport } from "./copy-exports";
 import { generateContent } from "@/actions/generate-content";
 import createToast from "@/hooks/create-toast";
 import { ERROR_MESSAGES } from "@/lib/error-messages";
-import {AIContentDisplay} from "./ai-content-display";
-import {EditContentModal} from "@/components/edit-content-modal";
-import { ScrollArea } from "@/components/ui/scroll-area"
+import { AIContentDisplay } from "./ai-content-display";
+import { EditContentModal } from "@/components/edit-content-modal";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { cn } from "@/lib/utils";
 
 interface ContentOptions {
   type: string;
@@ -41,7 +34,105 @@ interface ContentOptions {
   topic: string;
 }
 
+// ─── Option pill / card sub-components ───────────────────────────────────────
 
+interface OptionCardProps {
+  value: string;
+  label: string;
+  description: string;
+  icon: React.ElementType;
+  selected: boolean;
+  onClick: () => void;
+}
+
+function OptionCard({
+  label,
+  description,
+  icon: Icon,
+  selected,
+  onClick,
+}: OptionCardProps) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn(
+        "relative flex flex-col items-start gap-1 rounded-xl border px-4 py-3 text-left transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+        selected
+          ? "border-foreground bg-foreground text-background shadow-md"
+          : "border-border bg-card hover:border-foreground/40 hover:bg-accent",
+      )}
+    >
+      <div className="flex items-center gap-2">
+        <Icon className="h-3.5 w-3.5 shrink-0" />
+        <span className="text-sm font-semibold tracking-tight">{label}</span>
+      </div>
+      <span
+        className={cn(
+          "text-xs leading-snug",
+          selected ? "text-background/70" : "text-muted-foreground",
+        )}
+      >
+        {description}
+      </span>
+    </button>
+  );
+}
+
+interface LengthPillProps {
+  value: string;
+  label: string;
+  description: string;
+  selected: boolean;
+  onClick: () => void;
+}
+
+function LengthPill({
+  label,
+  description,
+  selected,
+  onClick,
+}: LengthPillProps) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn(
+        "flex flex-1 flex-col items-center gap-0.5 rounded-xl border px-3 py-3 transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+        selected
+          ? "border-foreground bg-foreground text-background shadow-md"
+          : "border-border bg-card hover:border-foreground/40 hover:bg-accent",
+      )}
+    >
+      <span className="text-sm font-semibold">{label}</span>
+      <span
+        className={cn(
+          "text-xs",
+          selected ? "text-background/70" : "text-muted-foreground",
+        )}
+      >
+        {description}
+      </span>
+    </button>
+  );
+}
+
+// ─── Step label ───────────────────────────────────────────────────────────────
+
+function StepLabel({ number, label }: { number: number; label: string }) {
+  return (
+    <div className="flex items-center gap-2.5 mb-3">
+      <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-foreground text-background text-[11px] font-bold">
+        {number}
+      </span>
+      <Label className="text-sm font-semibold tracking-wide uppercase text-muted-foreground">
+        {label}
+      </Label>
+    </div>
+  );
+}
+
+// ─── Main component ───────────────────────────────────────────────────────────
 
 export function ContentGeneratorClient() {
   const [options, setOptions] = useState<ContentOptions>({
@@ -50,63 +141,66 @@ export function ContentGeneratorClient() {
     length: "",
     topic: "",
   });
-  const [generatedContent, setGeneratedContent] = useState(``);
+  const [generatedContent, setGeneratedContent] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
   const [wordCount, setWordCount] = useState(0);
-  const [paperId, setPaperId] = useState<string | null>(null)
+  const [paperId, setPaperId] = useState<string | null>(null);
 
-  const targetRef = useRef<HTMLDivElement | null>(null);
+  const outputRef = useRef<HTMLDivElement | null>(null);
   const { createError, createSimple } = createToast();
+
+  // ── Data ──────────────────────────────────────────────────────────────────
+
   const contentTypes = [
     {
       value: "essay",
       label: "Essay",
       icon: FileText,
-      description: "Academic or persuasive essays",
+      description: "Academic or persuasive",
     },
     {
       value: "letter",
       label: "Letter",
       icon: Mail,
-      description: "Formal or informal letters",
+      description: "Formal or informal",
     },
     {
       value: "term-paper",
       label: "Term Paper",
       icon: Notebook,
-      description: "Research-based academic paper for a course",
-    }
+      description: "Full academic research paper",
+    },
   ];
-  
+
   const toneOptions = [
     {
       value: "formal",
       label: "Formal",
       icon: Briefcase,
-      description: "Professional and structured",
+      description: "Professional & structured",
     },
     {
       value: "academic",
       label: "Academic",
       icon: GraduationCap,
-      description: "Scholarly and research-focused",
+      description: "Scholarly & research-focused",
     },
     {
       value: "casual",
       label: "Casual",
       icon: Users,
-      description: "Relaxed and conversational",
+      description: "Relaxed & conversational",
     },
     {
       value: "friendly",
       label: "Friendly",
       icon: Users,
-      description: "Warm and approachable",
+      description: "Warm & approachable",
     },
   ];
+
   const getLengthOptions = (type: string) => {
     const isTermPaper = type.toLowerCase() === "term-paper";
-  
     if (isTermPaper) {
       return [
         { value: "short", label: "Short", description: "1–5 pages" },
@@ -114,403 +208,366 @@ export function ContentGeneratorClient() {
         { value: "long", label: "Long", description: "11–15 pages" },
       ];
     }
-  
     return [
       { value: "short", label: "Short", description: "500–750 words" },
-      { value: "medium", label: "Medium", description: "750–1200 words" },
-      { value: "long", label: "Long", description: "1200–2000 words" },
+      { value: "medium", label: "Medium", description: "750–1,200 words" },
+      { value: "long", label: "Long", description: "1,200–2,000 words" },
     ];
   };
-  const lengthOptions =  getLengthOptions(options.type);
+
+  const lengthOptions = getLengthOptions(options.type);
+
+  const topicPlaceholder =
+    options.type === "essay"
+      ? "e.g., The impact of social media on teenage mental health"
+      : options.type === "letter"
+        ? "e.g., A formal complaint about delayed shipping to customer service"
+        : options.type === "term-paper"
+          ? "e.g., The role of monetary policy in managing inflation in emerging economies"
+          : "Describe what you want to write about — be as specific as possible";
+
+  const isFormValid =
+    options.type && options.tone && options.length && options.topic.trim();
+
+  // ── Handler ───────────────────────────────────────────────────────────────
+
   const handleGenerate = async () => {
-    if (
-      !options.type ||
-      !options.tone ||
-      !options.length ||
-      !options.topic.trim()
-    ) {
-      return;
-    }
+    if (!isFormValid) return;
     try {
       setIsGenerating(true);
       setGeneratedContent("");
-      setPaperId(null)
+      setPaperId(null);
+
       const { topic, tone, length, type } = options;
-      if(type === "term-paper") {
-        createSimple("Generating your term paper. This might take a little while.")
+      if (type === "term-paper") {
+        createSimple("Generating your term paper — this may take a moment.");
       }
+
       const { content, error, id } = await generateContent(
         topic,
         type,
         tone,
-        length
+        length,
       );
+
       if (error || !content)
         return createError(error || ERROR_MESSAGES.UNKNOWN_ERROR);
+
       setGeneratedContent(content);
       setWordCount(content.split(" ").length);
-      if (id) {
-        setPaperId(id);
-      }
-      
-    targetRef.current?.scrollIntoView({ behavior: 'smooth' });
-    } catch (error) {
-      console.error(`Unable to generate content: ${error}`);
+      if (id) setPaperId(id);
+
+      setTimeout(
+        () =>
+          outputRef.current?.scrollIntoView({
+            behavior: "smooth",
+            block: "start",
+          }),
+        100,
+      );
+    } catch (err) {
+      console.error(`Unable to generate content: ${err}`);
       createError(ERROR_MESSAGES.INTERNAL_SERVER_ERROR);
     } finally {
       setIsGenerating(false);
     }
   };
 
-
-
-  const isFormValid =
-    options.type && options.tone && options.length && options.topic.trim();
+  // ── Render ────────────────────────────────────────────────────────────────
 
   return (
-    <>
-      {/* Hero Section */}
-      <section className="pt-32 pb-12 px-4">
-        <div className="max-w-7xl mx-auto text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-          >
-            <div className="flex justify-center items-center space-x-4 mb-6">
-              <div className="bg-gradient-to-r from-green-600 to-blue-600 p-3 rounded-2xl">
-                <PenTool className="h-8 w-8 text-white" />
-              </div>
-              <Sparkles className="h-8 w-8 text-yellow-500" />
-              <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-3 rounded-2xl">
-                <Wand2 className="h-8 w-8 text-white" />
-              </div>
-            </div>
-            <h1 className="text-5xl md:text-6xl font-bold bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent mb-6">
+    <div className="min-h-screen  bg-background">
+      {/* ── Header ─────────────────────────────────────────────────────────── */}
+      <header className=" ">
+        <div className="max-w-5xl mx-auto px-6 py-4 flex items-center gap-3">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-foreground">
+            <PenTool className="h-4 w-4 text-background" />
+          </div>
+          <div>
+            <h1 className="text-sm font-bold tracking-tight leading-none">
               AI Content Generator
             </h1>
-            <p className="text-xl md:text-2xl text-gray-600 dark:text-gray-300 mb-8 max-w-3xl mx-auto">
-              Generate essays, letters, and written content with AI. Choose your
-              style, tone, and length for perfect results.
+            <p className="text-xs text-muted-foreground mt-0.5">
+              Essays · Letters · Term Papers
             </p>
-          </motion.div>
+          </div>
         </div>
-      </section>
+      </header>
 
-      {/* Main Interface */}
-      <section className="pb-20 px-4">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {/* Input Section */}
-            <motion.div
-              initial={{ opacity: 0, x: -30 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.8 }}
-            >
-              <Card className="backdrop-blur-sm border-0 shadow-xl rounded-3xl">
-                <CardHeader>
-                  <CardTitle className="flex items-center space-x-2">
-                    <Wand2 className="h-6 w-6 text-green-600" />
-                    <span>Content Settings</span>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  {/* Content Type Selector */}
-                  <div className="space-y-3">
-                    <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                      Content Type
-                    </Label>
-                    <Select
-                      value={options.type}
-                      onValueChange={(value) =>
-                        setOptions({ ...options, type: value })
-                      }
-                    >
-                      <SelectTrigger className="h-12 rounded-xl border-gray-200 dark:border-gray-700">
-                        <SelectValue placeholder="Choose what you want to create">
-                          {options.type
-                            ? contentTypes.find((t) => t.value === options.type)
-                                ?.label
-                            : null}
-                        </SelectValue>
-                      </SelectTrigger>
-                      <SelectContent>
-                        {contentTypes.map((type) => (
-                          <SelectItem key={type.value} value={type.value}>
-                            <div className="flex items-center space-x-3">
-                              <type.icon className="h-4 w-4" />
-                              <div>
-                                <div className="font-medium">{type.label}</div>
-                                <div className="text-xs text-gray-500">
-                                  {type.description}
-                                </div>
-                              </div>
-                            </div>
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  {/* Tone Selector */}
-                  <div className="space-y-3">
-                    <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                      Tone & Style
-                    </Label>
-                    <Select
-                      value={options.tone}
-                      onValueChange={(value) =>
-                        setOptions({ ...options, tone: value })
-                      }
-                    >
-                      <SelectTrigger className="h-12 rounded-xl border-gray-200 dark:border-gray-700">
-                        <SelectValue placeholder="Select the tone for your content">
-                          {options.tone
-                            ? toneOptions.find((t) => t.value === options.tone)
-                                ?.label
-                            : null}
-                        </SelectValue>
-                      </SelectTrigger>
-                      <SelectContent>
-                        {toneOptions.map((tone) => (
-                          <SelectItem key={tone.value} value={tone.value}>
-                            <div className="flex items-center space-x-3">
-                              <tone.icon className="h-4 w-4" />
-                              <div>
-                                <div className="font-medium">{tone.label}</div>
-                                <div className="text-xs text-gray-500">
-                                  {tone.description}
-                                </div>
-                              </div>
-                            </div>
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  {/* Length Selector */}
-                  <div className="space-y-3">
-                    <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                      Content Length
-                    </Label>
-                    <Select
-                      value={options.length}
-                      onValueChange={(value) =>
-                        setOptions({ ...options, length: value })
-                      }
-                    >
-                      <SelectTrigger className="h-12 rounded-xl border-gray-200 dark:border-gray-700">
-                        <SelectValue placeholder="Choose the length of your content">
-                          {options.length
-                            ? lengthOptions.find(
-                                (l) => l.value === options.length
-                              )?.label
-                            : null}
-                        </SelectValue>
-                      </SelectTrigger>
-                      <SelectContent>
-                        {lengthOptions.map((length) => (
-                          <SelectItem key={length.value} value={length.value}>
-                            <div>
-                              <div className="font-medium">{length.label}</div>
-                              <div className="text-xs text-gray-500">
-                                {length.description}
-                              </div>
-                            </div>
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  {/* Topic Input */}
-                  <div className="space-y-3">
-                    <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                      Topic or Subject
-                      <span className="text-red-500 ml-1">*</span>
-                    </Label>
-                    <Input
-                      placeholder={
-                        options.type === "essay"
-                          ? "e.g., The Impact of Technology on Education"
-                          : options.type === "letter"
-                          ? "e.g., Application for Summer Internship"
-                          : options.type.toLowerCase() === "term-paper"
-                          ? "e.g., Climate Change Policy Analysis"
-                          : "Enter your topic or subject here..."
-                      }
-                      value={options.topic}
-                      onChange={(e) =>
-                        setOptions({ ...options, topic: e.target.value })
-                      }
-                      className="h-12 rounded-xl border-gray-200 dark:border-gray-700 focus:border-green-500 dark:focus:border-green-400"
-                    />
-
-<p className="text-xs text-gray-500 dark:text-gray-400">
-  {options.type === "essay"
-    ? "Provide a clear essay topic or thesis statement"
-    : options.type === "letter"
-    ? "Describe the purpose or main subject of your letter"
-    : options.type.toLowerCase() === "term-paper"
-    ? "Enter a detailed research topic for your term paper"
-    : "Be specific about what you want to write about"}
-</p>
-
-                  </div>
-
-                  {/* Generate Button */}
-                  <Button
-                    onClick={handleGenerate}
-                    disabled={!isFormValid || isGenerating}
-                    className="w-full h-12   rounded-xl text-lg font-medium"
-                  >
-                    {isGenerating ? (
-                      <>
-                        <Loader2 className="h-5 w-5  animate-spin" />
-                        {/* Generating Content... */}
-                      </>
-                    ) : (
-                      <>
-                        <Sparkles className="h-5 w-5 mr-2" />
-                        Generate Content
-                      </>
-                    )}
-                  </Button>
-
-                  {!isFormValid && (
-                    <p className="text-sm text-amber-600 dark:text-amber-400 text-center">
-                      Please fill in all fields to generate content
-                    </p>
-                  )}
-                </CardContent>
-              </Card>
-            </motion.div>
-
-            {/* Output Section */}
-            <motion.div
-              initial={{ opacity: 0, x: 30 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.8, delay: 0.2 }}
-            >
-              <Card
-                className=" backdrop-blur-sm border-0 shadow-xl rounded-3xl"
-                ref={targetRef}
-              >
-                <CardHeader>
-                  <div className="flex items-center gap-2 flex-wrap justify-between">
-                    <CardTitle className="flex items-center space-x-2">
-                      <FileText className="h-6 w-6 text-blue-600" />
-                      <span>Generated Content</span>
-                    </CardTitle>
-                    {generatedContent  && (
-                      <div className="flex gap-1 flex-wrap">
-                        <EditContentModal content={generatedContent} setContent={setGeneratedContent} id={paperId} />
-                        <CopyExport
-                          content={generatedContent}
-                          filename="generated-content"
-                        />
-                      </div>
-                    )}
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  {generatedContent ? (
-                    <div className="space-y-4">
-                      <ScrollArea className="bg-background rounded-xl  h-[450px] w-full">
-                        <pre className="whitespace-pre-wrap p-2 text-sm  text-foreground font-sans leading-relaxed">
-                          {/* {generatedContent} */}
-                          <AIContentDisplay content={generatedContent} />
-                        </pre>
-                      </ScrollArea>
-                      <div className="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400">
-                        <div className="flex items-center flex-wrap gap-4 w-full">
-                          <span>Words: {wordCount}</span>
-                          <span>Type: {options.type}</span>
-                          <span>Tone: {options.tone}</span>
-                        </div>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="text-center py-12">
-                      <PenTool className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                      <p className="text-gray-500 dark:text-gray-400 mb-2">
-                        Your AI-generated content will appear here
-                      </p>
-                      <p className="text-sm text-gray-400">
-                        Fill in the options above and click &quot;Generate
-                        Content&quot; to get started
-                      </p>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </motion.div>
+      <main className="max-w-5xl mx-auto px-6 py-12 space-y-16">
+        {/* ── Brief panel ──────────────────────────────────────────────────── */}
+        <motion.section
+          initial={{ opacity: 0, y: 24 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="space-y-10"
+        >
+          {/* Hero text */}
+          <div className="space-y-2">
+            <h2 className="text-4xl font-bold tracking-tight">
+              What would you like to write?
+            </h2>
+            <p className="text-muted-foreground text-lg max-w-xl">
+              Tell us the type, tone, and length - then describe your topic.
+              We&apos;ll handle the rest.
+            </p>
           </div>
 
-          {/* How It Works Section */}
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.6 }}
-            className="mt-16"
-          >
-            <Card className="border-0 rounded-3xl">
-              <CardContent className="p-8">
-                <h3 className="text-2xl font-bold text-center text-gray-800 dark:text-gray-200 mb-8">
-                  How Content Generation Works
-                </h3>
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                  <div className="text-center">
-                    <div className="bg-green-600 rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-4">
-                      <FileText className="h-6 w-6 text-white" />
-                    </div>
-                    <h4 className="font-semibold text-gray-800 dark:text-gray-200 mb-2">
-                      1. Choose Type
-                    </h4>
-                    <p className="text-sm text-gray-600 dark:text-gray-300">
-                      Select between essay, letter  or term-paper format
+          {/* Form card */}
+          <div className="rounded-2xl border border-border bg-card shadow-sm p-8 space-y-10">
+            {/* Step 1 — Type */}
+            <div>
+              <StepLabel number={1} label="Content Type" />
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                {contentTypes.map((t) => (
+                  <OptionCard
+                    key={t.value}
+                    {...t}
+                    selected={options.type === t.value}
+                    onClick={() =>
+                      setOptions((prev) => ({
+                        ...prev,
+                        type: t.value,
+                        length: "",
+                      }))
+                    }
+                  />
+                ))}
+              </div>
+            </div>
+
+            {/* Divider */}
+            <div className="border-t border-border/60" />
+
+            {/* Step 2 — Tone */}
+            <div>
+              <StepLabel number={2} label="Tone & Style" />
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                {toneOptions.map((t) => (
+                  <OptionCard
+                    key={t.value}
+                    {...t}
+                    selected={options.tone === t.value}
+                    onClick={() =>
+                      setOptions((prev) => ({ ...prev, tone: t.value }))
+                    }
+                  />
+                ))}
+              </div>
+            </div>
+
+            
+            <div className="border-t border-border/60" />
+
+            <div>
+              <StepLabel number={3} label="Length" />
+              <div className="flex flex-wrap gap-3">
+                {lengthOptions.map((l) => (
+                  <LengthPill
+                    key={l.value}
+                    {...l}
+                    selected={options.length === l.value}
+                    onClick={() =>
+                      setOptions((prev) => ({ ...prev, length: l.value }))
+                    }
+                  />
+                ))}
+                {!options.type && (
+                  <p className="self-center text-sm text-muted-foreground pl-1">
+                    Select a content type first
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {/* Divider */}
+            <div className="border-t border-border/60" />
+
+            {/* Step 4 — Topic */}
+            <div>
+              <StepLabel number={4} label="Your Topic" />
+              <Textarea
+                placeholder={topicPlaceholder}
+                value={options.topic}
+                onChange={(e) =>
+                  setOptions((prev) => ({ ...prev, topic: e.target.value }))
+                }
+                rows={4}
+                className="resize-none rounded-xl border-border bg-background text-sm leading-relaxed focus-visible:ring-1 focus-visible:ring-foreground focus-visible:border-foreground transition-colors"
+              />
+              <div className="flex items-center justify-between mt-2">
+                <p className="text-xs text-muted-foreground">
+                  Be specific — the more detail you give, the better the output.
+                </p>
+                <span
+                  className={cn(
+                    "text-xs tabular-nums",
+                    options.topic.length > 2800
+                      ? "text-destructive"
+                      : "text-muted-foreground",
+                  )}
+                >
+                  {options.topic.length} / 3,000
+                </span>
+              </div>
+            </div>
+
+            {/* Generate CTA */}
+            <div className="flex items-center gap-4 pt-2">
+              <Button
+                onClick={handleGenerate}
+                disabled={!isFormValid || isGenerating}
+                size="lg"
+                className="rounded-xl px-8 font-semibold gap-2 transition-all"
+              >
+                {isGenerating ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Generating…
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="h-4 w-4" />
+                    Generate
+                    <ArrowRight className="h-4 w-4" />
+                  </>
+                )}
+              </Button>
+
+              {!isFormValid && !isGenerating && (
+                <p className="text-sm text-muted-foreground">
+                  Complete all steps above to continue
+                </p>
+              )}
+            </div>
+          </div>
+        </motion.section>
+
+        {/* ── Output panel ─────────────────────────────────────────────────── */}
+        <AnimatePresence>
+          {(generatedContent || isGenerating) && (
+            <motion.section
+              ref={outputRef}
+              key="output"
+              initial={{ opacity: 0, y: 32 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 16 }}
+              transition={{ duration: 0.45 }}
+              className="space-y-4"
+            >
+              {/* Output header */}
+              <div className="flex items-center justify-between flex-wrap gap-3">
+                <div className="space-y-0.5">
+                  <h3 className="text-xl font-bold tracking-tight flex items-center gap-2">
+                    <FileText className="h-5 w-5 text-muted-foreground" />
+                    Generated Content
+                  </h3>
+                  {generatedContent && (
+                    <p className="text-xs text-muted-foreground">
+                      {wordCount.toLocaleString()} words ·{" "}
+                      <span className="capitalize">{options.type}</span> ·{" "}
+                      <span className="capitalize">{options.tone}</span> ·{" "}
+                      <span className="capitalize">{options.length}</span>
                     </p>
-                  </div>
-                  <div className="text-center">
-                    <div className="bg-blue-600 rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-4">
-                      <Users className="h-6 w-6 text-white" />
-                    </div>
-                    <h4 className="font-semibold text-gray-800 dark:text-gray-200 mb-2">
-                      2. Set Tone
-                    </h4>
-                    <p className="text-sm text-gray-600 dark:text-gray-300">
-                      Pick the style that fits your needs
-                    </p>
-                  </div>
-                  <div className="text-center">
-                    <div className="bg-purple-600 rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-4">
-                      <BookOpen className="h-6 w-6 text-white" />
-                    </div>
-                    <h4 className="font-semibold text-gray-800 dark:text-gray-200 mb-2">
-                      3. Choose Length
-                    </h4>
-                    <p className="text-sm text-gray-600 dark:text-gray-300">
-                      Select short, medium, or long format
-                    </p>
-                  </div>
-                  <div className="text-center">
-                    <div className="bg-orange-600 rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-4">
-                      <Sparkles className="h-6 w-6 text-white" />
-                    </div>
-                    <h4 className="font-semibold text-gray-800 dark:text-gray-200 mb-2">
-                      4. Generate
-                    </h4>
-                    <p className="text-sm text-gray-600 dark:text-gray-300">
-                      Get your custom content instantly
-                    </p>
-                  </div>
+                  )}
                 </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-        </div>
-      </section>
-    </>
+
+                {generatedContent && (
+                  <div className="flex gap-2">
+                    <EditContentModal
+                      content={generatedContent}
+                      setContent={setGeneratedContent}
+                      id={paperId}
+                    />
+                    <CopyExport
+                      content={generatedContent}
+                      filename="generated-content"
+                    />
+                  </div>
+                )}
+              </div>
+
+              {/* Document surface */}
+              <div className="rounded-2xl border border-border bg-card shadow-sm overflow-hidden">
+                {isGenerating && !generatedContent ? (
+                  /* Skeleton shimmer while waiting */
+                  <div className="p-10 space-y-4 animate-pulse">
+                    <div className="h-6 bg-muted rounded w-2/5" />
+                    <div className="h-4 bg-muted rounded w-full" />
+                    <div className="h-4 bg-muted rounded w-11/12" />
+                    <div className="h-4 bg-muted rounded w-4/5" />
+                    <div className="h-4 bg-muted rounded w-full" />
+                    <div className="h-4 bg-muted rounded w-3/4" />
+                  </div>
+                ) : (
+                  <ScrollArea className="h-[600px] w-full">
+                    {/* Mimic a document page inside the card */}
+                    <div className="mx-auto max-w-3xl px-10 py-10 prose prose-sm dark:prose-invert prose-headings:font-bold prose-headings:tracking-tight prose-p:leading-relaxed prose-p:text-foreground/90">
+                      <AIContentDisplay content={generatedContent} />
+                    </div>
+                  </ScrollArea>
+                )}
+              </div>
+            </motion.section>
+          )}
+        </AnimatePresence>
+
+        {/* ── How it works ─────────────────────────────────────────────────── */}
+        <motion.section
+          initial={{ opacity: 0, y: 24 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.15 }}
+          className="border-t border-border/60 pt-16"
+        >
+          <h3 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-8">
+            How it works
+          </h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
+            {[
+              {
+                icon: FileText,
+                step: "01",
+                title: "Choose a type",
+                body: "Essay, letter, or full term paper - pick the format that fits.",
+              },
+              {
+                icon: Users,
+                step: "02",
+                title: "Set the tone",
+                body: "From formal to friendly, match the voice to your audience.",
+              },
+              {
+                icon: BookOpen,
+                step: "03",
+                title: "Pick a length",
+                body: "Short, medium, or long - we calibrate depth accordingly.",
+              },
+              {
+                icon: Sparkles,
+                step: "04",
+                title: "Generate",
+                body: "Describe your topic and get a complete, ready-to-use draft.",
+              },
+            ].map(({ icon: Icon, step, title, body }) => (
+              <div key={step} className="space-y-3">
+                <div className="flex items-center gap-3">
+                  <span className="text-xs font-mono text-muted-foreground/60 tracking-widest">
+                    {step}
+                  </span>
+                  <div className="h-px flex-1 bg-border/60" />
+                </div>
+                <Icon className="h-5 w-5 text-muted-foreground" />
+                <div>
+                  <p className="text-sm font-semibold">{title}</p>
+                  <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
+                    {body}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </motion.section>
+      </main>
+    </div>
   );
 }

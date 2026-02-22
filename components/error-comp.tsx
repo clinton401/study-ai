@@ -1,28 +1,23 @@
-import {ERROR_MESSAGES} from "@/lib/error-messages";
-import { Card, CardContent } from "@/components/ui/card";
-import {
-    RefreshCw,
-    AlertCircle,
-} from "lucide-react";
-  import {Button} from "@/components/ui/button";
+import { ERROR_MESSAGES } from "@/lib/error-messages";
+import { RefreshCw, AlertCircle } from "lucide-react";
+import { Button } from "@/components/ui/button";
+
 interface ErrorCompProps {
-    onRetry: () => void;
-    error?: Error | null;
-  }
-  export function ErrorComp({ onRetry, error }: ErrorCompProps) {
-    return (
-      <Card className="md:col-span-3">
-        <CardContent className="flex flex-col items-center justify-center py-8">
-          <AlertCircle className="h-8 w-8 text-destructive mb-4" />
-          <p className="text-sm text-muted-foreground mb-4">
-            {error?.message || ERROR_MESSAGES.UNKNOWN_ERROR}
-          </p>
-          <Button onClick={onRetry} variant="outline" size="sm">
-            <RefreshCw className="h-4 w-4 mr-2" />
-            Try Again
-          </Button>
-        </CardContent>
-      </Card>
-      // </div>
-    );
-  }
+  onRetry: () => void;
+  error?: Error | null;
+}
+
+export function ErrorComp({ onRetry, error }: ErrorCompProps) {
+  return (
+    <div className="col-span-full rounded-2xl border border-border bg-card shadow-sm p-10 flex flex-col items-center justify-center gap-3 text-center">
+      <AlertCircle className="h-8 w-8 text-destructive" />
+      <p className="text-sm text-muted-foreground max-w-xs">
+        {error?.message || ERROR_MESSAGES.UNKNOWN_ERROR}
+      </p>
+      <Button onClick={onRetry} variant="outline" size="sm" className="rounded-xl gap-1.5">
+        <RefreshCw className="h-3.5 w-3.5" />
+        Try Again
+      </Button>
+    </div>
+  );
+}

@@ -3,9 +3,13 @@ import authConfig from "@/auth.config";
 import { connectToDatabase } from "@/lib/db";
 import { Types } from "mongoose";
 import { Session } from "next-auth";
+import Credentials from "next-auth/providers/credentials";
+import { loginSchema } from "@/lib/validations/auth";
+import { validatePassword } from "@/lib/password-utils";
 
 import { findUserByEmail, findUserById, updateUser, createUser } from "@/data/user";
 export const { handlers, signIn, signOut, auth } = NextAuth({
+  ...authConfig,
   session: {
     strategy: "jwt",
   },
@@ -13,6 +17,31 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     signIn: "/login",
     error: "/error",
   },
+  providers: [
+    ...authConfig.providers,
+    Credentials({
+      async authorize(credentials) {
+        await connectToDatabase();
+        const validatedFields = loginSchema.safeParse(credentials);
+        if (validatedFields.success) {
+          const { email, password } = validatedFields.data;
+          const user = await findUserByEmail(email);
+          if (!user || !user.password) return null;
+          const isValid = await validatePassword(password, user.password);
+          if (!isValid) return null;
+
+          return {
+            id: user._id.toString(),
+            email: user.email,
+            name: user.name,
+            createdAt: user.createdAt,
+            updatedAt: user.updatedAt
+          };
+        }
+        return null;
+      },
+    }),
+  ],
   callbacks: {
     async signIn({ user, account }) {
       // console.log({user, account})
@@ -110,5 +139,4 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       return session;
     },
   },
-  ...authConfig,
 });

@@ -6,7 +6,6 @@ import { ERROR_MESSAGES } from "@/lib/error-messages";
 import { errorResponse, hasExpired } from "@/lib/main";
 import { resetPasswordSchema, ResetPasswordFormData } from "@/lib/validations/auth";
 import { rateLimit } from "@/lib/rate-limit";
-import getOrCreateGuestId from "@/hooks/get-or-create-guest-id";
 import { Types } from "mongoose";
 import { validatePassword, hashPassword } from "@/lib/password-utils";
 
@@ -14,12 +13,12 @@ export const resetPassword = async (data: ResetPasswordFormData, userId: string,
     const result = resetPasswordSchema.safeParse(data);
     if (!result.success) return errorResponse(ERROR_MESSAGES.INVALID_FIELDS);
     try {
-        const userId = await getOrCreateGuestId();
-        const { error } = await rateLimit(userId, {}, false, "AUTH");
+
+        const validId = new Types.ObjectId(userId);
+        const { error } = await rateLimit(validId, {}, false, "AUTH");
         if (error) return errorResponse(error);
         const { password } = result.data;
         await connectToDatabase();
-        const validId = new Types.ObjectId(userId);
         const [user, token] = await Promise.all([findUserById(validId), findPasswordResetTokenByUserId(validId)]);
         if (!user) return errorResponse(ERROR_MESSAGES.USER_NOT_FOUND);
         if (!user.password) return errorResponse(ERROR_MESSAGES.PASSWORD_NOT_SET)
