@@ -8,14 +8,12 @@ import {
   Mail,
   Sparkles,
   Loader2,
-  Wand2,
   BookOpen,
   Users,
   Briefcase,
   GraduationCap,
   Notebook,
   ArrowRight,
-  ChevronDown,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -48,7 +46,6 @@ interface OptionCardProps {
 }
 
 function OptionCard({
-  value,
   label,
   description,
   icon: Icon,
@@ -359,13 +356,12 @@ export function ContentGeneratorClient() {
               </div>
             </div>
 
-            {/* Divider */}
+            
             <div className="border-t border-border/60" />
 
-            {/* Step 3 — Length */}
             <div>
               <StepLabel number={3} label="Length" />
-              <div className="flex gap-3">
+              <div className="flex flex-wrap gap-3">
                 {lengthOptions.map((l) => (
                   <LengthPill
                     key={l.value}

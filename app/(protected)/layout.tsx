@@ -11,9 +11,7 @@ export default async function ProtectedLayout({
   return (
     <>
       {!session && (
-        <div className="pt-4">
           <LoginForm loginPage={false} />
-        </div>
       )}
       <div className={`${!session ? "hidden" : ""}  w-full   h-full `}>
         {children}

@@ -15,7 +15,7 @@ export function FeaturesHero() {
           <span className="inline-flex items-center rounded-full border border-border bg-muted/60 px-3 py-1 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
             Features
           </span>
-          <h1 className="text-5xl sm:text-6xl font-bold tracking-tight bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent leading-[1.1]">
+          <h1 className="text-5xl sm:text-6xl font-bold tracking-tight leading-[1.1]">
             6 Powerful AI Tools
           </h1>
           <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">

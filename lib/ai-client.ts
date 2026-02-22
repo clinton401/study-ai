@@ -91,6 +91,7 @@ export function getModelForFeature(
   feature: 'GRAMMAR' | 'REPHRASE' | 'SUMMARY' | 'CONTENT' | 'EDIT' | 'FLASHCARDS' | 'QUESTIONS',
   isPremium: boolean = false
 ): string {
+  if (isPremium) return AI_MODELS.FAST;
   switch (feature) {
     case 'GRAMMAR':
     case 'REPHRASE':

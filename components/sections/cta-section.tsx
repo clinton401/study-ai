@@ -30,7 +30,7 @@ export function CTASection() {
             <Button
               asChild
               size="lg"
-              className="rounded-xl gap-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:opacity-90 text-white border-0"
+              className="rounded-xl gap-2 "
             >
               <Link href="/register">
                 Sign Up Free
