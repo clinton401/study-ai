@@ -5,7 +5,7 @@ export default function ContentGeneratorLoading() {
     <div className="min-h-screen bg-background w-full overflow-hidden">
       {/* Header Skeleton */}
       <header className="">
-        <div className="max-w-5xl mx-auto px-6 py-4 flex items-center gap-3">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 py-4 flex items-center gap-3">
           <Skeleton className="h-8 w-8 rounded-lg" />
           <div className="space-y-1.5">
             <Skeleton className="h-3 w-32" />
@@ -14,7 +14,7 @@ export default function ContentGeneratorLoading() {
         </div>
       </header>
 
-      <main className="max-w-5xl mx-auto px-6 py-12 space-y-16">
+      <main className="max-w-5xl mx-auto w-full px-4 sm:px-6 py-12 space-y-16">
         {/* Brief Panel Skeleton */}
         <section className="space-y-10">
           {/* Hero Skeleton */}
@@ -61,9 +61,9 @@ export default function ContentGeneratorLoading() {
                 <Skeleton className="h-5 w-5 rounded-full" />
                 <Skeleton className="h-4 w-24" />
               </div>
-              <div className="flex gap-3">
+              <div className="flex flex-wrap gap-3">
                 {[...Array(3)].map((_, i) => (
-                  <Skeleton key={i} className="h-14 flex-1 rounded-xl" />
+                  <Skeleton key={i} className="h-14 flex-1 min-w-[80px] rounded-xl" />
                 ))}
               </div>
             </div>
