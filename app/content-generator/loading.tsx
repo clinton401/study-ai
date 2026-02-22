@@ -2,7 +2,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export default function ContentGeneratorLoading() {
   return (
-    <div className="min-h-screen bg-background w-full">
+    <div className="min-h-screen bg-background w-full overflow-hidden">
       {/* Header Skeleton */}
       <header className="">
         <div className="max-w-5xl mx-auto px-6 py-4 flex items-center gap-3">
@@ -24,7 +24,7 @@ export default function ContentGeneratorLoading() {
           </div>
 
           {/* Form Card Skeleton */}
-          <div className="rounded-2xl border border-border bg-card p-8 space-y-10">
+          <div className="rounded-2xl border border-border bg-card p-6 sm:p-8 space-y-10">
             {/* Step 1 — Type */}
             <div className="space-y-4">
               <div className="flex items-center gap-2">
