@@ -35,7 +35,7 @@ export const AIContentDisplay = ({ content, chatPage = false }: Props) => {
         ),
         h2: ({ node, ...props }) => (
           <h2
-            className="text-xl font-semibold tracking-tight text-foreground mt-7 mb-2.5"
+            className="text-xl font-semibold tracking-tight text-foreground mt-8 mb-2.5"
             {...props}
           />
         ),
@@ -85,7 +85,7 @@ export const AIContentDisplay = ({ content, chatPage = false }: Props) => {
           />
         ),
         hr: ({ node, ...props }) => (
-          <hr className="my-6 border-border/60" {...props} />
+          <hr className="mt-8 mb-6 border-border/60" {...props} />
         ),
         // @ts-ignore
         code: ({ node, inline, ...props }) =>
@@ -101,10 +101,7 @@ export const AIContentDisplay = ({ content, chatPage = false }: Props) => {
           ),
         table: ({ node, ...props }) => (
           <div className="overflow-x-auto my-4">
-            <table
-              className="w-full text-sm border-collapse"
-              {...props}
-            />
+            <table className="w-full text-sm border-collapse" {...props} />
           </div>
         ),
         th: ({ node, ...props }) => (
