@@ -4,8 +4,8 @@ import { Separator } from "@/components/ui/separator";
 
 export default function DashboardLoading() {
   return (
-    <main className="w-full">
-      <div className="flex flex-col gap-6 p-6 w-full">
+    <main className="w-full overflow-hidden">
+      <div className="flex flex-col gap-6 p-4 sm:p-6">
         {/* Analytics Cards Skeleton */}
         <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
           {[...Array(6)].map((_, i) => (
