@@ -2,89 +2,40 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export default function ProtectedLoading() {
   return (
-    <div className="min-h-screen bg-background w-full overflow-hidden">
-      {/* Header Skeleton */}
-      <header className="">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 py-4 flex items-center gap-3">
-          <Skeleton className="h-8 w-8 rounded-lg" />
-          <div className="space-y-1.5">
-            <Skeleton className="h-3 w-24" />
-            <Skeleton className="h-2 w-32" />
-          </div>
+    <div className="w-full px-4 py-10 space-y-10 overflow-hidden">
+      {/* Header Area */}
+      <div className="space-y-4">
+        <Skeleton className="h-12 w-48 rounded-xl" />
+        <Skeleton className="h-6 w-full max-w-lg rounded-lg" />
+      </div>
+      
+      {/* Account Info Block */}
+      <div className="rounded-2xl border p-6 space-y-6">
+        <Skeleton className="h-6 w-32" />
+        <div className="space-y-4">
+          <Skeleton className="h-10 w-full rounded-lg" />
+          <Skeleton className="h-10 w-full rounded-lg" />
         </div>
-      </header>
+      </div>
 
-      <main className="max-w-5xl mx-auto px-4 sm:px-6 py-10 space-y-6">
-        {/* Hero Skeleton */}
-        <div className="space-y-3 px-4 sm:px-0">
-          <Skeleton className="h-10 w-64" />
-          <Skeleton className="h-6 w-full max-w-xl" />
+      {/* Security Block */}
+      <div className="rounded-2xl border p-6 space-y-6">
+        <Skeleton className="h-6 w-40" />
+        <div className="space-y-4">
+          <Skeleton className="h-10 w-full rounded-lg" />
+          <Skeleton className="h-10 w-full rounded-lg" />
         </div>
+        <Skeleton className="h-10 w-32 rounded-lg" />
+      </div>
 
-        {/* Section 1 Skeleton */}
-        <div className="rounded-2xl border border-border bg-card overflow-hidden">
-          <div className="flex items-start gap-3 px-4 sm:px-8 py-5 border-b border-border/60">
-            <Skeleton className="h-8 w-8 rounded-lg shrink-0" />
-            <div className="space-y-2">
-              <Skeleton className="h-3 w-32" />
-              <Skeleton className="h-2 w-48" />
-            </div>
-          </div>
-          <div className="px-4 sm:px-8 py-6">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Skeleton className="h-3 w-12" />
-                <Skeleton className="h-10 w-full rounded-xl" />
-              </div>
-              <div className="space-y-2">
-                <Skeleton className="h-3 w-12" />
-                <Skeleton className="h-10 w-full rounded-xl" />
-              </div>
-            </div>
-          </div>
+      {/* Danger Zone Block */}
+      <div className="rounded-2xl border border-destructive/20 p-6 space-y-4 bg-destructive/5">
+        <Skeleton className="h-6 w-32" />
+        <div className="flex flex-col sm:flex-row gap-3">
+          <Skeleton className="h-12 w-full sm:w-1/2 rounded-xl" />
+          <Skeleton className="h-12 w-full sm:w-1/2 rounded-xl" />
         </div>
-
-        {/* Section 2 Skeleton */}
-        <div className="rounded-2xl border border-border bg-card overflow-hidden">
-           <div className="flex items-start gap-3 px-4 sm:px-8 py-5 border-b border-border/60">
-            <Skeleton className="h-8 w-8 rounded-lg shrink-0" />
-            <div className="space-y-2">
-              <Skeleton className="h-3 w-40" />
-              <Skeleton className="h-2 w-56" />
-            </div>
-          </div>
-          <div className="px-4 sm:px-8 py-6 space-y-5">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-               <div className="space-y-2">
-                <Skeleton className="h-3 w-16" />
-                <Skeleton className="h-10 w-full rounded-xl" />
-              </div>
-              <div className="space-y-2">
-                <Skeleton className="h-3 w-16" />
-                <Skeleton className="h-10 w-full rounded-xl" />
-              </div>
-            </div>
-            <Skeleton className="h-9 w-32 rounded-xl" />
-          </div>
-        </div>
-
-        {/* Danger Zone Skeleton */}
-        <div className="rounded-2xl border border-destructive/30 bg-card overflow-hidden">
-           <div className="flex items-start gap-3 px-4 sm:px-8 py-5 border-b border-destructive/20 bg-destructive/5">
-            <Skeleton className="h-8 w-8 rounded-lg shrink-0" />
-            <div className="space-y-2">
-              <Skeleton className="h-3 w-24" />
-              <Skeleton className="h-2 w-48" />
-            </div>
-          </div>
-          <div className="px-4 sm:px-8 py-6">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-               <Skeleton className="h-14 w-full rounded-xl" />
-               <Skeleton className="h-14 w-full rounded-xl" />
-            </div>
-          </div>
-        </div>
-      </main>
+      </div>
     </div>
   );
 }
