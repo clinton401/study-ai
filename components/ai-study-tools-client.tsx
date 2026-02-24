@@ -204,13 +204,13 @@ export function AIStudyToolsClient() {
         </div>
       </header>
 
-      <main className="max-w-5xl mx-auto w-full px-4 sm:px-6 py-12 space-y-6">
+      <main className="max-w-5xl mx-auto w-full px-0 sm:px-6 py-12 space-y-6">
         {/* Hero */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.45 }}
-          className="space-y-1"
+          className="space-y-1 px-4 sm:px-0"
         >
           <h2 className="text-4xl font-bold tracking-tight">Study smarter.</h2>
           <p className="text-muted-foreground text-lg max-w-xl">
@@ -341,7 +341,7 @@ export function AIStudyToolsClient() {
           {/* Step 2 — Summary length */}
           <div>
             <StepLabel number={2} label="Summary length" />
-            <div className="flex gap-3">
+            <div className="flex flex-wrap gap-3">
               {[
                 {
                   value: "short" as const,

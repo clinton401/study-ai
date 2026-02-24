@@ -57,19 +57,19 @@ function OptionCard({
       type="button"
       onClick={onClick}
       className={cn(
-        "relative flex flex-col items-start gap-1 rounded-xl border px-4 py-3 text-left transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+        "relative flex flex-col items-start gap-1 rounded-xl border px-4 py-3 text-left transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring w-full min-w-0",
         selected
           ? "border-foreground bg-foreground text-background shadow-md"
           : "border-border bg-card hover:border-foreground/40 hover:bg-accent",
       )}
     >
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 min-w-0 w-full">
         <Icon className="h-3.5 w-3.5 shrink-0" />
-        <span className="text-sm font-semibold tracking-tight">{label}</span>
+        <span className="text-sm font-semibold tracking-tight truncate">{label}</span>
       </div>
       <span
         className={cn(
-          "text-xs leading-snug",
+          "text-xs leading-snug break-words w-full",
           selected ? "text-background/70" : "text-muted-foreground",
         )}
       >
@@ -98,7 +98,7 @@ function LengthPill({
       type="button"
       onClick={onClick}
       className={cn(
-        "flex flex-1 flex-col items-center gap-0.5 rounded-xl border px-3 py-3 transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+        "flex flex-1 flex-col items-center gap-0.5 rounded-xl border px-3 py-3 transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring min-w-[80px]",
         selected
           ? "border-foreground bg-foreground text-background shadow-md"
           : "border-border bg-card hover:border-foreground/40 hover:bg-accent",
@@ -107,7 +107,7 @@ function LengthPill({
       <span className="text-sm font-semibold">{label}</span>
       <span
         className={cn(
-          "text-xs",
+          "text-xs text-center",
           selected ? "text-background/70" : "text-muted-foreground",
         )}
       >
@@ -276,10 +276,10 @@ export function ContentGeneratorClient() {
   // ── Render ────────────────────────────────────────────────────────────────
 
   return (
-    <div className="min-h-screen  bg-background">
+    <div className="min-h-screen bg-background overflow-x-hidden">
       {/* ── Header ─────────────────────────────────────────────────────────── */}
-      <header className=" ">
-        <div className="max-w-5xl mx-auto px-6 py-4 flex items-center gap-3">
+      <header className="">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 py-4 flex items-center gap-3">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-foreground">
             <PenTool className="h-4 w-4 text-background" />
           </div>
@@ -294,13 +294,13 @@ export function ContentGeneratorClient() {
         </div>
       </header>
 
-      <main className="max-w-5xl mx-auto px-6 py-12 space-y-16">
+      <main className="max-w-5xl mx-auto px-0 sm:px-6 py-12 space-y-16 w-full">
         {/* ── Brief panel ──────────────────────────────────────────────────── */}
         <motion.section
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="space-y-10"
+          className="space-y-10 px-4 sm:px-0 overflow-hidden"
         >
           {/* Hero text */}
           <div className="space-y-2">
@@ -314,9 +314,9 @@ export function ContentGeneratorClient() {
           </div>
 
           {/* Form card */}
-          <div className="rounded-2xl border border-border bg-card shadow-sm p-8 space-y-10">
+          <div className="rounded-2xl border border-border bg-card shadow-sm p-4 sm:p-8 space-y-10 overflow-hidden">
             {/* Step 1 — Type */}
-            <div>
+            <div className="w-full">
               <StepLabel number={1} label="Content Type" />
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 {contentTypes.map((t) => (
@@ -340,9 +340,9 @@ export function ContentGeneratorClient() {
             <div className="border-t border-border/60" />
 
             {/* Step 2 — Tone */}
-            <div>
+            <div className="w-full">
               <StepLabel number={2} label="Tone & Style" />
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
                 {toneOptions.map((t) => (
                   <OptionCard
                     key={t.value}
@@ -359,7 +359,7 @@ export function ContentGeneratorClient() {
             
             <div className="border-t border-border/60" />
 
-            <div>
+            <div className="w-full">
               <StepLabel number={3} label="Length" />
               <div className="flex flex-wrap gap-3">
                 {lengthOptions.map((l) => (
@@ -384,41 +384,43 @@ export function ContentGeneratorClient() {
             <div className="border-t border-border/60" />
 
             {/* Step 4 — Topic */}
-            <div>
+            <div className="w-full">
               <StepLabel number={4} label="Your Topic" />
-              <Textarea
-                placeholder={topicPlaceholder}
-                value={options.topic}
-                onChange={(e) =>
-                  setOptions((prev) => ({ ...prev, topic: e.target.value }))
-                }
-                rows={4}
-                className="resize-none rounded-xl border-border bg-background text-sm leading-relaxed focus-visible:ring-1 focus-visible:ring-foreground focus-visible:border-foreground transition-colors"
-              />
-              <div className="flex items-center justify-between mt-2">
-                <p className="text-xs text-muted-foreground">
-                  Be specific — the more detail you give, the better the output.
-                </p>
-                <span
-                  className={cn(
-                    "text-xs tabular-nums",
-                    options.topic.length > 2800
-                      ? "text-destructive"
-                      : "text-muted-foreground",
-                  )}
-                >
-                  {options.topic.length} / 3,000
-                </span>
+              <div className="space-y-2">
+                <Textarea
+                  placeholder={topicPlaceholder}
+                  value={options.topic}
+                  onChange={(e) =>
+                    setOptions((prev) => ({ ...prev, topic: e.target.value }))
+                  }
+                  rows={4}
+                  className="resize-none rounded-xl border-border bg-background text-sm leading-relaxed focus-visible:ring-1 focus-visible:ring-foreground focus-visible:border-foreground transition-colors w-full"
+                />
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <p className="text-xs text-muted-foreground">
+                    Be specific — the more detail you give, the better the output.
+                  </p>
+                  <span
+                    className={cn(
+                      "text-xs tabular-nums self-end",
+                      options.topic.length > 2800
+                        ? "text-destructive"
+                        : "text-muted-foreground",
+                    )}
+                  >
+                    {options.topic.length} / 3,000
+                  </span>
+                </div>
               </div>
             </div>
 
             {/* Generate CTA */}
-            <div className="flex items-center gap-4 pt-2">
+            <div className="flex flex-col sm:flex-row items-center gap-4 pt-2">
               <Button
                 onClick={handleGenerate}
                 disabled={!isFormValid || isGenerating}
                 size="lg"
-                className="rounded-xl px-8 font-semibold gap-2 transition-all"
+                className="rounded-xl px-8 font-semibold gap-2 transition-all w-full sm:w-auto"
               >
                 {isGenerating ? (
                   <>
@@ -435,7 +437,7 @@ export function ContentGeneratorClient() {
               </Button>
 
               {!isFormValid && !isGenerating && (
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm text-muted-foreground text-center sm:text-left">
                   Complete all steps above to continue
                 </p>
               )}
@@ -453,7 +455,7 @@ export function ContentGeneratorClient() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 16 }}
               transition={{ duration: 0.45 }}
-              className="space-y-4"
+              className="space-y-4 px-4 sm:px-0"
             >
               {/* Output header */}
               <div className="flex items-center justify-between flex-wrap gap-3">
@@ -488,10 +490,10 @@ export function ContentGeneratorClient() {
               </div>
 
               {/* Document surface */}
-              <div className="rounded-2xl border border-border bg-card shadow-sm overflow-hidden">
+              <div className="rounded-2xl border border-border bg-card shadow-sm overflow-hidden w-full">
                 {isGenerating && !generatedContent ? (
                   /* Skeleton shimmer while waiting */
-                  <div className="p-10 space-y-4 animate-pulse">
+                  <div className="p-6 sm:p-10 space-y-4 animate-pulse">
                     <div className="h-6 bg-muted rounded w-2/5" />
                     <div className="h-4 bg-muted rounded w-full" />
                     <div className="h-4 bg-muted rounded w-11/12" />
@@ -502,7 +504,7 @@ export function ContentGeneratorClient() {
                 ) : (
                   <ScrollArea className="h-[600px] w-full">
                     {/* Mimic a document page inside the card */}
-                    <div className="mx-auto max-w-3xl px-10 py-10 prose prose-sm dark:prose-invert prose-headings:font-bold prose-headings:tracking-tight prose-p:leading-relaxed prose-p:text-foreground/90">
+                    <div className="mx-auto max-w-3xl px-4 sm:px-10 py-6 sm:py-10 prose prose-sm dark:prose-invert prose-headings:font-bold prose-headings:tracking-tight prose-p:leading-relaxed prose-p:text-foreground/90 break-words overflow-x-hidden">
                       <AIContentDisplay content={generatedContent} />
                     </div>
                   </ScrollArea>
@@ -517,9 +519,9 @@ export function ContentGeneratorClient() {
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.15 }}
-          className="border-t border-border/60 pt-16"
+          className="border-t border-border/60 pt-16 px-4 sm:px-0"
         >
-          <h3 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-8">
+          <h3 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-8 text-center sm:text-left">
             How it works
           </h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
@@ -559,7 +561,7 @@ export function ContentGeneratorClient() {
                 <Icon className="h-5 w-5 text-muted-foreground" />
                 <div>
                   <p className="text-sm font-semibold">{title}</p>
-                  <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
+                  <p className="text-xs text-muted-foreground mt-1 leading-relaxed break-words">
                     {body}
                   </p>
                 </div>
